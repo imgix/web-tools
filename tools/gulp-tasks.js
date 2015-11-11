@@ -8,7 +8,7 @@ var _ = require('lodash'),
     mainBowerFiles = require('main-bower-files'),
     streamCache = require('./stream-cache.js');
 
-module.exports = function setupGulpTasks(gulp, configFactory, options) {
+module.exports = function setupGulpTasks(gulp, configFactory, taskOptions) {
   var config,
       localURL,
       server,
@@ -24,7 +24,7 @@ module.exports = function setupGulpTasks(gulp, configFactory, options) {
   // Set global config at outset
   setConfig(args);
 
-  options = _.defaultsDeep({}, options, {
+  taskOptions = _.defaultsDeep({}, taskOptions, {
     build: { // Set to false to ignore all build tasks
         js: !!config.srcFiles.js,
         templates: !!config.srcFiles.templates,
@@ -75,9 +75,9 @@ module.exports = function setupGulpTasks(gulp, configFactory, options) {
   /*--- Default Task ---*/
   gulp.task('default', function(done) {
     var tasks = _.compact([
-      !!options.build ? 'build' : undefined,
-      !!options.serve ? 'serve' : undefined,
-      !!options.watch ? 'watch' : undefined,
+      !!taskOptions.build ? 'build' : undefined,
+      !!taskOptions.serve ? 'serve' : undefined,
+      !!taskOptions.watch ? 'watch' : undefined,
       done
     ]);
 
@@ -86,19 +86,19 @@ module.exports = function setupGulpTasks(gulp, configFactory, options) {
 
 
   /*--- Build Tasks ---*/
-  if (!!options.build) {
+  if (!!taskOptions.build) {
 
     // Main build task:
     gulp.task('build', function(done) {
       var buildTasks = _.compact([
-        options.build.js ? 'build-js' : null,
-        options.build.templates ? 'build-templates' : null,
-        options.build.css ? 'build-css' : null,
-        options.build.svg ? 'build-svg' : null,
-        options.build.partials ? 'build-partials' : null,
-        options.build.misc ? 'build-misc' : null,
-        options.build.html ? 'build-html' : null,
-        options.build.deps ? 'build-deps' : null,
+        taskOptions.build.js ? 'build-js' : null,
+        taskOptions.build.templates ? 'build-templates' : null,
+        taskOptions.build.css ? 'build-css' : null,
+        taskOptions.build.svg ? 'build-svg' : null,
+        taskOptions.build.partials ? 'build-partials' : null,
+        taskOptions.build.misc ? 'build-misc' : null,
+        taskOptions.build.html ? 'build-html' : null,
+        taskOptions.build.deps ? 'build-deps' : null,
       ]);
 
       runSequence(
@@ -115,7 +115,7 @@ module.exports = function setupGulpTasks(gulp, configFactory, options) {
         .pipe(plugins.clean());
     });
 
-    if(options.build.js) {
+    if(taskOptions.build.js) {
       gulp.task('build-js', function() {
         var buildJS = require('./build-js.js');
 
@@ -126,7 +126,7 @@ module.exports = function setupGulpTasks(gulp, configFactory, options) {
       });
     }
 
-    if(options.build.templates) {
+    if(taskOptions.build.templates) {
       gulp.task('build-templates', function() {
         var buildTemplates = require('./build-templates.js');
 
@@ -137,7 +137,7 @@ module.exports = function setupGulpTasks(gulp, configFactory, options) {
       });
     }
 
-    if(options.build.css) {
+    if(taskOptions.build.css) {
       gulp.task('build-css', function() {
         var buildCSS = require('./build-css.js');
 
@@ -148,7 +148,7 @@ module.exports = function setupGulpTasks(gulp, configFactory, options) {
       });
     }
 
-    if(options.build.svg) {
+    if(taskOptions.build.svg) {
       gulp.task('build-svg', function() {
         var buildSVG = require('./build-svg.js');
 
@@ -159,7 +159,7 @@ module.exports = function setupGulpTasks(gulp, configFactory, options) {
       });
     }
 
-    if(options.build.partials) {
+    if(taskOptions.build.partials) {
       gulp.task('build-partials', function() {
         var buildPartials = require('./build-partials.js');
 
@@ -170,7 +170,7 @@ module.exports = function setupGulpTasks(gulp, configFactory, options) {
       });
     }
 
-    if(options.build.misc) {
+    if(taskOptions.build.misc) {
       gulp.task('build-misc', function() {
         return gulp.src(config.srcFiles.misc)
           .pipe(gulp.dest(config.destPaths.misc))
@@ -178,15 +178,15 @@ module.exports = function setupGulpTasks(gulp, configFactory, options) {
       });
     }
 
-    if(options.build.html) {
+    if(taskOptions.build.html) {
       gulp.task('build-html',
         _.compact([ // List of tasks that must execute first
-            options.build.js ? 'build-js' : null,
-            options.build.templates ? 'build-templates' : null,
-            options.build.css ? 'build-css' : null,
-            options.build.svg ? 'build-svg' : null,
-            options.build.partials ? 'build-partials' : null,
-            options.build.deps ? 'build-deps' : null,
+            taskOptions.build.js ? 'build-js' : null,
+            taskOptions.build.templates ? 'build-templates' : null,
+            taskOptions.build.css ? 'build-css' : null,
+            taskOptions.build.svg ? 'build-svg' : null,
+            taskOptions.build.partials ? 'build-partials' : null,
+            taskOptions.build.deps ? 'build-deps' : null,
           ]),
         function() {
           var buildHTML = require('./build-html.js'),
@@ -201,7 +201,7 @@ module.exports = function setupGulpTasks(gulp, configFactory, options) {
             streamCache.get('partials')
           ]));
 
-          if (options.build.deps) {
+          if (taskOptions.build.deps) {
             assetStreams.deps = streamCache.get('deps');
           }
 
@@ -215,7 +215,7 @@ module.exports = function setupGulpTasks(gulp, configFactory, options) {
       );
     }
 
-    if (options.build.deps) {
+    if (taskOptions.build.deps) {
       gulp.task('build-deps', function() {
         var bowerStream = gulp.src(mainBowerFiles({
                 paths: {
@@ -275,77 +275,77 @@ module.exports = function setupGulpTasks(gulp, configFactory, options) {
 
 
   /*--- Watch Tasks ---*/
-  if (!!options.watch) {
+  if (!!taskOptions.watch) {
 
     // Main watch task:
     gulp.task('watch', function() {
-      function onChange(event, component, options) {
+      function onChange(event, component, changeOptions) {
         var tasks;
 
-        options = _.defaults({}, options, {
+        changeOptions = _.defaults({}, changeOptions, {
           rebuildHtml: (event.type === 'added' || event.type === 'deleted')
         });
 
         tasks = _.compact([
           'build-' + component,
           // Re-build the HTML so file changes are properly referenced
-          options.build.html && options.rebuildHtml ? 'build-html' : null,
-          options.serve ? 'serve' : null
+          taskOptions.build.html && changeOptions.rebuildHtml ? 'build-html' : null,
+          taskOptions.serve ? 'serve' : null
         ]);
 
         runSequence.apply(null, tasks);
       }
 
-      if (options.watch.js && options.build.js) {
+      if (taskOptions.watch.js && taskOptions.build.js) {
         gulp.watch(
           config.srcFiles.js,
           _.partialRight(onChange, 'js')
         );
       }
 
-      if (options.watch.templates && options.build.templates) {
+      if (taskOptions.watch.templates && taskOptions.build.templates) {
         gulp.watch(
           config.srcFiles.templates,
           _.partialRight(onChange, 'templates')
         );
       }
 
-      if (options.watch.css && options.build.css) {
+      if (taskOptions.watch.css && taskOptions.build.css) {
         gulp.watch(
           config.srcFiles.css,
           _.partialRight(onChange, 'css')
         );
       }
 
-      if (options.watch.svg && options.build.svg) {
+      if (taskOptions.watch.svg && taskOptions.build.svg) {
         gulp.watch(
           config.srcFiles.svg,
           _.partialRight(onChange, 'svg')
         );
       }
 
-      if (options.watch.partials && options.build.partials) {
+      if (taskOptions.watch.partials && taskOptions.build.partials) {
         gulp.watch(
           config.srcFiles.partials,
           _.partialRight(onChange, 'partials')
         );
       }
 
-      if (options.watch.misc && options.build.misc) {
+      if (taskOptions.watch.misc && taskOptions.build.misc) {
         gulp.watch(
           config.srcFiles.misc,
           _.partialRight(onChange, 'misc', {rebuildHtml: false})
         );
       }
 
-      if (options.watch.html && options.build.html) {
+      if (taskOptions.watch.html && taskOptions.build.html) {
         gulp.watch(
           config.srcFiles.html,
           _.partialRight(onChange, 'html', {rebuildHtml: false})
         );
       }
 
-      if (options.watch.deps && options.build.deps) {
+      if (taskOptions.watch.deps && taskOptions.build.deps) {
         gulp.watch(
           path.join(config.bower.components, '**', '*'),
           _.partialRight(onChange, 'deps')
@@ -356,7 +356,7 @@ module.exports = function setupGulpTasks(gulp, configFactory, options) {
 
 
   /*--- Serve Tasks ---*/
-  if (!!options.serve) {
+  if (!!taskOptions.serve) {
 
     // Main serve task:
     gulp.task('serve', function(done) {
@@ -413,19 +413,19 @@ module.exports = function setupGulpTasks(gulp, configFactory, options) {
 
 
   /*--- Test Tasks ---*/
-  if (!!options.test) {
+  if (!!taskOptions.test) {
 
     // Main test task:
     gulp.task('test', function(done) {
       var testTasks = _.compact([
-        options.test.unit ? 'test-unit' : null,
-        options.test.integration ? 'test-integration' : null
+        taskOptions.test.unit ? 'test-unit' : null,
+        taskOptions.test.integration ? 'test-integration' : null
       ]);
 
       runSequence(testTasks, done);
     });
 
-    if (options.test.unit) {
+    if (taskOptions.test.unit) {
       gulp.task('test-unit', function() {
         var testUnit = require('./test-unit.js'),
             bowerStream,
@@ -465,7 +465,7 @@ module.exports = function setupGulpTasks(gulp, configFactory, options) {
     }
 
     // We can't run integration tests without all three of these
-    if (options.test.integration && !!options.build && !!options.serve) {
+    if (taskOptions.test.integration && !!taskOptions.build && !!taskOptions.serve) {
       gulp.task('test-integration', function(done) {
         var testIntegration = require('./test-integration.js'),
             stream,
