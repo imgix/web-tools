@@ -2,6 +2,15 @@ machine:
   node:
     version: 0.12.2
 
+dependencies:
+  pre:
+    # This is necessary because Circle's default npm@2.7.4 cannot install remote private repos: https://github.com/npm/npm/issues/7807
+    - npm install -g npm@2.12.1
+    - npm install -g bower
+  override:
+    - npm install
+    - bower install
+
 test:
   override:
     - 'gulp test-unit'
