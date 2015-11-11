@@ -46,7 +46,7 @@ module.exports = function testUnit(config) {
       },
     function flush(done) {
         karmaConfig.files = karmaFiles;
-        new KarmaServer(karmaConfig, done).start();
+        new KarmaServer(karmaConfig, _.ary(done, 0)).start();
       }
   );
 }
