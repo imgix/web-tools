@@ -1,5 +1,5 @@
 var _ = require('lodash'),
-    through2 = require('through2');
+    through = require('through2');
 
 module.exports = (function() {
   var streamCache = {};
@@ -15,8 +15,8 @@ module.exports = (function() {
   return {
     get: get,
     put: function (id) {
-        return through2.obj(null, function flush(flushCallback) {
-          put(id, this.pipe(through2.obj({end: false})));
+        return through.obj(null, null, function flush(flushCallback) {
+          put(id, this.pipe(through.obj({end: false})));
           flushCallback();
         });
       }

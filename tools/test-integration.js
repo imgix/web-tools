@@ -3,9 +3,9 @@ var _ = require('lodash'),
     Q = require('q'),
     Selenium = require('selenium-standalone'),
     WebdriverJSAngular = require('webdriverjs-angular'),
-    Eyeball = require('./tools/eyeball.js'),
+    Eyeball = require('./eyeball.js'),
     Jasmine = require('jasmine'),
-    JasmineTerminalReporter = require('jasmine-terminal-reporter'),
+    JasmineTerminalReporter = require('jasmine-terminal-reporter');
 
 module.exports = function testIntegration(config) {
   var jasmineInstance,
@@ -106,4 +106,4 @@ module.exports = function testIntegration(config) {
             });
       }
   );
-});
+};

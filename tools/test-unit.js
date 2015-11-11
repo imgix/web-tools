@@ -1,7 +1,6 @@
 var path = require('path'),
     _ = require('lodash'),
     through = require('through2'),
-    getBowerFiles = require('./tools/get-bower-files.js'),
     KarmaServer = require('karma').Server;
 
 module.exports = function testUnit(config) {
@@ -34,9 +33,9 @@ module.exports = function testUnit(config) {
           },
         moduleName: config.ngModule
       },
-    reporters: ['progress'],
-    browsers: config.karma.browsers || ['Chrome'],
-    captureTimeout: 20 * 1000, // Kill and give up after 20 seconds
+    reporters: config.karma.reporters || ['progress'],
+    browsers: config.karma.browsers || ['PhantomJS'],
+    captureTimeout: config.karma.timeout || 20 * 1000
   };
 
   return through.obj(
@@ -47,8 +46,7 @@ module.exports = function testUnit(config) {
       },
     function flush(done) {
         karmaConfig.files = karmaFiles;
-        new KarmaServer(karmaConfig, flushCallback).start();
-        done();
+        new KarmaServer(karmaConfig, done).start();
       }
   );
 }

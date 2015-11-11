@@ -82,7 +82,6 @@ module.exports = function(args) {
             doBanner: isProd,
             doVersioning: isProd,
             doSourcemaps: isProd,
-
             concatName: name + '.js',
             banner: banner
           },
@@ -92,10 +91,8 @@ module.exports = function(args) {
             doBanner: isProd,
             doVersioning: isProd,
             doSourcemaps: isProd,
-
             concatName: name + '.tmpl.js',
             banner: banner,
-
             ngHtml2JsConfig: {
                 moduleName: ngName
               }
@@ -106,10 +103,8 @@ module.exports = function(args) {
             doBanner: isProd,
             doVersioning: isProd,
             doSourcemaps: isProd,
-
             concatName: name + '.css',
             banner: banner,
-
             pluginConfigs: {
                 'postcss-import': {
                     path: [path.join(appBase, 'base')]
@@ -118,14 +113,7 @@ module.exports = function(args) {
           },
         svg: {
             doMinify: isProd,
-            doConcat: isProd,
-            doBanner: isProd,
-            doVersioning: isProd,
-            doSourcemaps: isProd,
-
-            moduleName: ngName,
-            concatName: name + '.svg',
-            banner: banner
+            concatName: name + '.svg'
           },
         html: {
             doMinify: isProd,
@@ -153,7 +141,6 @@ module.exports = function(args) {
       },
 
     karma: {
-        configFile: path.join(appBase, 'karma.config.js'),
         browsers: ['Chrome', 'Firefox', 'Safari']
       },
 

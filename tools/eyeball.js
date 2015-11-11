@@ -5,7 +5,7 @@ var _ = require('lodash'),
     rimraf = require('rimraf'),
     Q = require('q'),
     gm = require('gm'),
-    resemble = require('node-resemble\.js');
+    resemble = require('node-resemble-js');
 
 module.exports = (function() {
   var defaultOptions = {

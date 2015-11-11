@@ -1,14 +1,17 @@
 var _ = require('lodash'),
     through = require('through2'),
-    gulpIf = require('gulp-if'),
-    htmlhint = require('gulp-htmlhint'),
-    htmlhintReporter = require('reporter-plus/htmlhint'),
-    htmlmin = require('gulp-htmlmin');
+    combine = require('stream-combiner'),
+    loadGulpPlugins = require('gulp-load-plugins'),
+    htmlhintReporter = require('reporter-plus/htmlhint');
 
 module.exports = function buildHTML(options, injectableStreams) {
+  var gulpPlugins = loadGulpPlugins({
+          scope: ['devDependencies']
+        });
+
   function injectAll(injectableStreams) {
     // Create a stream through which each file will pass
-    return through2obj(function transform(chunk, encoding, callback) {
+    return through.obj(function transform(chunk, encoding, callback) {
       var injectionStream = _.reduce(injectableStreams, function(uberStream, injectableStream, injectionName) {
         return uberStream.pipe(
             inject(injectableStream, _.merge({
@@ -50,29 +53,18 @@ module.exports = function buildHTML(options, injectableStreams) {
       }
   });
 
-  return through.obj(null, function flush(done) {
-    this
-      // Checking pipeline
-      .pipe(gulpIf(options.doCheck,
-          htmlhint('./runcoms/rc.htmlhint.json')
-        ))
-      .pipe(gulpIf(options.doCheck,
-          htmlhint.reporter(htmlhintReporter)
-        ))
+  return combine(_.compact([
+    // Checking pipeline
+    options.doCheck && gulpPlugins.htmlhint({
+        htmlhintrc: path.join(__dirname, '..', 'runcoms', 'rc.htmlhint.json')
+      }),
+    options.doCheck && gulpPlugins.htmlhint.reporter(htmlhintReporter),
 
-      // Processing pipeline
-      .pipe(gulpIf(!!injectableStreams,
-          injectAll(injectableStreams)
-        ))
-      .pipe(
-          processhtml(options.processOptions)
-        )
+    // Processing pipeline
+    !!injectableStreams && injectAll(injectableStreams),
+    gulpPlugins.processhtml(options.processOptions),
 
-      // Productionization pipeline
-      .pipe(
-          htmlmin(options.minifyConfig)
-        );
-
-    done();
-  });
+    // Productionization pipeline
+    gulpPlugins.htmlmin(options.minifyConfig)
+  ]));
 };

@@ -3,29 +3,23 @@ var _ = require('lodash'),
     fs = require('fs'),
     merge = require('merge2'),
     args = require('yargs').argv,
-    clean = require('gulp-clean'),
-    filter = require('gulp-filter'),
-    runSequence = require('run-sequence'),
+    runSequence,
+    loadPlugins = require('gulp-load-plugins'),
     mainBowerFiles = require('main-bower-files'),
-    getBowerFiles = require('./tools/get-bower-files.js'),
-    buildCSS = require('./tools/build-css.js'),
-    buildHTML = require('./tools/build-html.js'),
-    buildJS = require('./tools/build-js.js'),
-    buildSVG = require('./tools/build-svg.js'),
-    buildTemplates = require('./tools/build-templates.js'),
-    testIntegration = require('./tools/test-integration.js'),
-    testUnit = require('./tools/test-unit.js'),
-    streamCache = require('./tools/stream-cache.js'),
-    chromeLoad = require('./tools/chrome-load.js');
+    streamCache = require('./stream-cache.js');
 
-module.exports = function(gulp, configFile, options) {
+module.exports = function setupGulpTasks(gulp, configFactory, options) {
   var config,
       localURL,
-      server;
+      server,
+      plugins;
 
   function setConfig(withArgs) {
-    config = require(configFile)(withArgs);
+    config = configFactory(withArgs);
   }
+
+  // We can't require runSequence without Gulp being defined first
+  runSequence = require('run-sequence').use(gulp);
 
   // Set global config at outset
   setConfig(args);
@@ -57,6 +51,9 @@ module.exports = function(gulp, configFile, options) {
         integration: !!config.testFiles.integration
       }
   });
+
+  // Lazy-load plugins
+  plugins = loadPlugins();
 
   localURL = (function getAppUrl() {
     var protocol,
@@ -115,11 +112,13 @@ module.exports = function(gulp, configFile, options) {
 
     gulp.task('clean', function() {
       return gulp.src(config.destPaths.base, {read: false})
-        .pipe(clean());
+        .pipe(plugins.clean());
     });
 
     if(options.build.js) {
       gulp.task('build-js', function() {
+        var buildJS = require('./build-js.js');
+
         return gulp.src(config.srcFiles.js)
           .pipe(buildJS(config.buildOptions.js))
           .pipe(gulp.dest(config.destPaths.js))
@@ -129,6 +128,8 @@ module.exports = function(gulp, configFile, options) {
 
     if(options.build.templates) {
       gulp.task('build-templates', function() {
+        var buildTemplates = require('./build-templates.js');
+
         return gulp.src(config.srcFiles.templates)
           .pipe(buildTemplates(config.buildOptions.templates))
           .pipe(gulp.dest(config.destPaths.templates))
@@ -138,6 +139,8 @@ module.exports = function(gulp, configFile, options) {
 
     if(options.build.css) {
       gulp.task('build-css', function() {
+        var buildCSS = require('./build-css.js');
+
         return gulp.src(config.srcFiles.css)
           .pipe(buildCSS(config.buildOptions.css))
           .pipe(gulp.dest(config.destPaths.css))
@@ -147,6 +150,8 @@ module.exports = function(gulp, configFile, options) {
 
     if(options.build.svg) {
       gulp.task('build-svg', function() {
+        var buildSVG = require('./build-svg.js');
+
         return gulp.src(config.srcFiles.svg)
           .pipe(buildSVG(config.buildOptions.svg))
           .pipe(gulp.dest(config.destPaths.svg))
@@ -156,6 +161,8 @@ module.exports = function(gulp, configFile, options) {
 
     if(options.build.partials) {
       gulp.task('build-partials', function() {
+        var buildPartials = require('./build-partials.js');
+
         return gulp.src(config.srcFiles.partials)
           .pipe(buildPartials(config.buildOptions.partials))
           .pipe(gulp.dest(config.destPaths.partials))
@@ -182,7 +189,8 @@ module.exports = function(gulp, configFile, options) {
             options.build.deps ? 'build-deps' : null,
           ]),
         function() {
-          var assetStreams = {};
+          var buildHTML = require('./build-html.js'),
+              assetStreams = {};
 
           // Combine app assets into a single injectable stream
           assetStreams.app = merge(_.compact([
@@ -200,7 +208,7 @@ module.exports = function(gulp, configFile, options) {
           return gulp.src(config.srcFiles.svg)
             // Pipe to destination before processing so the injected assets will have the correct relative URLs
             .pipe(gulp.dest(config.destPaths.html))
-            .pipe(buildHTML(config.buildOptions.html, assetStreams)
+            .pipe(buildHTML(config.buildOptions.html, assetStreams))
             .pipe(gulp.dest(config.destPaths.html))
             .pipe(streamCache.put('html'));
         }
@@ -209,19 +217,19 @@ module.exports = function(gulp, configFile, options) {
 
     if (options.build.deps) {
       gulp.task('build-deps', function() {
-        var srcStream = getBowerFiles({
-                mainBowerFilesConfig: {
-                    paths: {
-                        bowerJson: config.bower.json,
-                        bowerDirectory: config.bower.components
-                      }
+        var bowerStream = gulp.src(mainBowerFiles({
+                paths: {
+                    bowerJson: config.bower.json,
+                    bowerDirectory: config.bower.components
                   }
-              }),
-            destStreams = {};
+              })),
+            destStreams = {},
+            buildCSS = require('./build-css.js'),
+            buildJS = require('./build-js.js');
 
         // Build JS
         destStreams.js = bowerStream
-          .pipe(filter('**/*.js'))
+          .pipe(plugins.filter('**/*.js'))
           .pipe(buildJS(_.default({
               doCheck: false,
               doBanner: false,
@@ -231,7 +239,7 @@ module.exports = function(gulp, configFile, options) {
 
         // Build CSS
         destStreams.css = bowerStream
-          .pipe(filter('**/*.css'))
+          .pipe(plugins.filter('**/*.css'))
           .pipe(buildCSS(_.default({
               doCheck: false,
               doBanner: false,
@@ -241,16 +249,16 @@ module.exports = function(gulp, configFile, options) {
 
         // Move SVG (assume they're already processed)
         destStreams.svg = bowerStream
-          .pipe(filter('**/*.svg'))
+          .pipe(plugins.filter('**/*.svg'))
           .pipe(gulp.dest(path.join(config.destPaths.svg, 'dependencies')));
 
         // Register partials (don't bother processing or moving them)
         destStreams.partials = bowerStream
-          .pipe(filter('**/*.html'));
+          .pipe(plugins.filter('**/*.html'));
 
         // Move misc (assume they're already processed)
         destStreams.misc = bowerStream
-          .pipe(filter([
+          .pipe(plugins.filter([
               '*',
               '!*.js',
               '!*.css',
@@ -399,7 +407,7 @@ module.exports = function(gulp, configFile, options) {
     });
 
     gulp.task('chrome-load', function() {
-      chromeLoad(localURL);
+      require('./chrome-load.js')(localURL);
     });
   }
 
@@ -419,46 +427,48 @@ module.exports = function(gulp, configFile, options) {
 
     if (options.test.unit) {
       gulp.task('test-unit', function() {
-        var bowerFiles,
-            appFiles,
-            testFiles,
+        var testUnit = require('./test-unit.js'),
+            bowerStream,
+            appStream,
+            testStream,
             matcher;
 
         if (!config.karma) {
           return;
         }
 
-        bowerFiles = mainBowerFiles({
+        bowerStream = gulp.src(mainBowerFiles({
             includeDev: true,
             paths: {
                 bowerDirectory: config.bower.components,
                 bowerJson: config.bower.json
               },
             filter: '**/*.js'
-          });
-        appFiles = gulp.src([config.srcFiles.js, config.srcFiles.templates], {read: false});
-        testFiles = gulp.src(config.testFiles.unit, {read: false});
+          }));
+        appStream = gulp.src(_.flatten([config.srcFiles.js, config.srcFiles.templates]), {read: false});
+        testStream = gulp.src(config.testFiles.unit, {read: false});
 
         if (!!args.match) {
           matcher = new RegExp(args.match.replace('/', '\\/'));
 
-          testFiles = testFiles.pipe(filter(function filterFiles(file) {
+          testStream = testStream.pipe(plugins.filter(function filterFiles(file) {
             return matcher.test(file.path);
           }));
         }
 
-        return merge([
-          bowerFiles,
-          appFiles,
-          testFiles
-        ]).pipe(testUnit(config));
+        return merge(
+          bowerStream,
+          appStream,
+          testStream
+        ).pipe(testUnit(config));
       });
     }
 
     // We can't run integration tests without all three of these
     if (options.test.integration && !!options.build && !!options.serve) {
       gulp.task('test-integration', function(done) {
-        var stream,
+        var testIntegration = require('./test-integration.js'),
+            stream,
             matcher;
 
         // Set global config for `env=test`
@@ -470,7 +480,7 @@ module.exports = function(gulp, configFile, options) {
         if (!!args.match) {
           matcher = new RegExp(args.match.replace('/', '\\/'));
 
-          stream = stream.pipe(filter(function filterFiles(file) {
+          stream = stream.pipe(plugins.filter(function filterFiles(file) {
             return matcher.test(file.path);
           }));
         }

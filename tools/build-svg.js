@@ -1,11 +1,12 @@
 var _ = require('lodash'),
-    through = require('through2'),
-    gulpIf = require('gulp-if'),
-    svgstore = require('gulp-svgstore'),
-    svgmin = require('gulp-svgmin'),
-    rename = require('gulp-rename');
+    combine = require('stream-combiner'),
+    loadGulpPlugins = require('gulp-load-plugins');
 
 module.exports = function buildSVG(options) {
+  var gulpPlugins = loadGulpPlugins({
+          scope: ['devDependencies']
+        });
+
   options = _.defaults({}, options, {
     doMinify: false,
 
@@ -24,24 +25,13 @@ module.exports = function buildSVG(options) {
       }
   });
 
-  return through.obj(null, function flush(done) {
-    this
-      // Processing pipeline
-      .pipe(
-          svgstore(options.svgStoreConfig)
-        )
-      .pipe(
-          rename(options.concatName)
-        )
+  return combine(_.compact([
+    // Processing pipeline
+    gulpPlugins.svgstore(options.svgStoreConfig),
+    gulpPlugins.rename(options.concatName),
 
-      // Productionization pipeline
-      .pipe(gulpIf(options.doMinify,
-          svgmin(options.svgMinConfig)
-        ))
-      .pipe(gulpIf(options.doMinify,
-          rename(options.minifyRenameConfig)
-        ));
-
-    done();
-  });
+    // Productionization pipeline
+    options.doMinify && gulpPlugins.svgmin(options.svgMinConfig),
+    options.doMinify && gulpPlugins.rename(options.minifyRenameConfig)
+  ]));
 };

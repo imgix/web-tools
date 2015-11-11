@@ -1,5 +1,5 @@
 var _ = require('lodash'),
-    exec = require('exec');
+    exec = require('child_process').execSync;
 
 module.exports = function chromeLoad(url) {
   var exec = require('child_process').execSync,

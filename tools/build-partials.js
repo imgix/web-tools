@@ -1,11 +1,14 @@
 var _ = require('lodash'),
-    through = require('through2'),
-    gulpIf = require('gulp-if'),
-    htmlhint = require('gulp-htmlhint'),
-    htmlhintReporter = require('reporter-plus/htmlhint'),
-    htmlmin = require('gulp-htmlmin');
+    path = require('path'),
+    combine = require('stream-combiner'),
+    loadGulpPlugins = require('gulp-load-plugins'),
+    htmlhintReporter = require('reporter-plus/htmlhint');
 
-module.exports = function buildPartials(options, injectableStreams) {
+module.exports = function buildPartials(options) {
+  var gulpPlugins = loadGulpPlugins({
+          scope: ['devDependencies']
+        });
+
   options = _.defaultsDeep({}, options, {
     doCheck: true,
     doMinify: false,
@@ -23,26 +26,17 @@ module.exports = function buildPartials(options, injectableStreams) {
       }
   });
 
-  return through.obj(null, function flush(done) {
-    this
-      // Checking pipeline
-      .pipe(gulpIf(options.doCheck,
-          htmlhint('./runcoms/rc.htmlhint.json')
-        ))
-      .pipe(gulpIf(options.doCheck,
-          htmlhint.reporter(htmlhintReporter)
-        ))
+  return combine(_.compact([
+    // Checking pipeline
+    options.doCheck && gulpPlugins.htmlhint({
+        htmlhintrc: path.join(__dirname, '..', 'runcoms', 'rc.htmlhint.json')
+      }),
+    options.doCheck && gulpPlugins.htmlhint.reporter(htmlhintReporter),
 
-      // Processing pipeline
-      .pipe(
-          processhtml(options.processOptions)
-        )
+    // Processing pipeline
+    gulpPlugins.processhtml(options.processOptions),
 
-      // Productionization pipeline
-      .pipe(
-          htmlmin(options.minifyConfig)
-        );
-
-    done();
-  });
+    // Productionization pipeline
+    gulpPlugins.htmlmin(options.minifyConfig)
+  ]));
 };
