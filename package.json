@@ -4,7 +4,7 @@
   "description": "Repository for tools and configurations common to all imgix web projects",
   "license": "UNLICENSED",
   "repository": "zebrafishlabs/web-tools",
-  "devDependencies": {
+  "dependencies": {
     "autoprefixer": "^6.0.3",
     "autoprefixer-core": "^6.0.1",
     "bower": "^1.4.1",
