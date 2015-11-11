@@ -230,7 +230,7 @@ module.exports = function setupGulpTasks(gulp, configFactory, taskOptions) {
         // Build JS
         destStreams.js = bowerStream
           .pipe(plugins.filter('**/*.js'))
-          .pipe(buildJS(_.default({
+          .pipe(buildJS(_.defaults({
               doCheck: false,
               doBanner: false,
               concatName: 'deps.js'
@@ -240,7 +240,7 @@ module.exports = function setupGulpTasks(gulp, configFactory, taskOptions) {
         // Build CSS
         destStreams.css = bowerStream
           .pipe(plugins.filter('**/*.css'))
-          .pipe(buildCSS(_.default({
+          .pipe(buildCSS(_.defaults({
               doCheck: false,
               doBanner: false,
               concatName: 'deps.css'
