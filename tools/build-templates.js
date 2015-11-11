@@ -1,4 +1,5 @@
 var _ = require('lodash'),
+    path = require('path'),
     combine = require('stream-combiner'),
     htmlhintReporter = require('reporter-plus/htmlhint'),
     loadGulpPlugins = require('gulp-load-plugins');
