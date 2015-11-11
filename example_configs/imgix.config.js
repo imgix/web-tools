@@ -64,6 +64,8 @@ module.exports = function(args) {
           appDestBase,
         js:
           path.join(appDestBase, 'scripts'),
+        templates:
+          path.join(appDestBase, 'scripts'),
         css:
           path.join(appDestBase, 'styles'),
         svg:
