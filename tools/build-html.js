@@ -1,50 +1,62 @@
 var _ = require('lodash'),
-    through = require('through2'),
+    path = require('path'),
     combine = require('stream-combiner'),
     loadGulpPlugins = require('gulp-load-plugins'),
-    htmlhintReporter = require('reporter-plus/htmlhint');
+    htmlhintReporter = require('reporter-plus/htmlhint'),
+    cheerio = require('cheerio');
 
 module.exports = function buildHTML(options, injectableStreams) {
-  var gulpPlugins = loadGulpPlugins({
-          scope: ['devDependencies']
-        });
+  var gulpPlugins = loadGulpPlugins();
 
   function injectAll(injectableStreams) {
-    // Create a stream through which each file will pass
-    return through.obj(function transform(chunk, encoding, callback) {
-      var injectionStream = _.reduce(injectableStreams, function(uberStream, injectableStream, injectionName) {
-        return uberStream.pipe(
-            inject(injectableStream, _.merge({
-              name: 'inject:' + name
-            }, options.injectConfig))
-          );
-      }, through2());
+    return combine(_(injectableStreams).map(function (stream, name) {
+      if (stream) {
+        return gulpPlugins.inject(stream, _.merge(
+          {name: 'inject:' + name},
+          options.injectOptions
+        ));
+      }
+    }).compact().value());
+  }
 
-      // Catch errors from the streamer and emit a gulp plugin error
-      injectionStream.on('error', this.emit.bind(this, 'error'));
+  function transformForInjection(filePath, file) {
+    var ext = path.extname(filePath),
+        $;
 
-      // Transform the stream
-      chunk.contents = chunk.contents.pipe(injectionStream);
+    // For SVG files, return the whole file minus xml and doctype declarations
+    if (ext === '.svg') {
+      $ = cheerio.load(file._contents.toString());
+      // Do some buffoonery with append here because cheerio can't do .prop('outerHTML')
+      return $('<div/>').append($('svg').addClass('refs')).html();
 
-      this.push(chunk);
-      callback();
-    });
+    // For HTML partials, return the whole darn thing
+    } else if (ext === '.html') {
+      return file._contents.toString();
+
+    // Use the default transform as fallback
+    } else {
+      return gulpPlugins.inject.transform.apply(gulpPlugins.inject.transform, arguments);
+    }
   }
 
   options = _.defaultsDeep({}, options, {
     doCheck: true,
+    doProcess: true,
+    doInject: false,
     doMinify: false,
-    doInject: true,
 
-    injectConfig: {
-        relative: false,
-        quiet: true
-      },
-    processConfig: {
+    processOptions: {
         commentMarker: 'process',
         strip: true
       },
-    minifyConfig: {
+    injectOptions: {
+        relative: false,
+        quiet: true,
+        removeTags: true,
+        empty: true,
+        transform: transformForInjection
+      },
+    minifyOptions: {
         removeComments: true,
         collapseWhitespace: true,
         conservativeCollapse: true,
@@ -61,10 +73,10 @@ module.exports = function buildHTML(options, injectableStreams) {
     options.doCheck && gulpPlugins.htmlhint.reporter(htmlhintReporter),
 
     // Processing pipeline
-    !!injectableStreams && injectAll(injectableStreams),
-    gulpPlugins.processhtml(options.processOptions),
+    options.doProcess && gulpPlugins.processhtml(options.processOptions),
+    options.doInject && !!injectableStreams && injectAll(injectableStreams),
 
     // Productionization pipeline
-    gulpPlugins.htmlmin(options.minifyConfig)
+    options.doMinify && gulpPlugins.htmlmin(options.minifyOptions)
   ]));
 };

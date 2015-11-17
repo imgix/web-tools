@@ -1,24 +1,31 @@
 var _ = require('lodash'),
-    through = require('through2');
+    through = require('through2'),
+    vinylFS = require('vinyl-fs');
 
 module.exports = (function() {
   var streamCache = {};
 
-  function get(id) {
-    return streamCache[id];
-  }
-
-  function put(id, data) {
-    streamCache[id] = data;
-  }
-
   return {
-    get: get,
+    get: function (id) {
+        return streamCache[id];
+      },
     put: function (id) {
-        return through.obj(null, null, function flush(flushCallback) {
-          put(id, this.pipe(through.obj({end: false})));
-          flushCallback();
-        });
+        var files = []
+
+        return through.obj(
+          function transform(chunk, encoding, callback) {
+              this.push(chunk);
+              files.push(chunk.path);
+              callback();
+            },
+          function flush(done) {
+              if (files.length) {
+                streamCache[id] = vinylFS.src(files);
+              }
+
+              done();
+            }
+        );
       }
   };
 })();

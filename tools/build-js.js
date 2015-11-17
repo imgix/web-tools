@@ -6,9 +6,7 @@ var _ = require('lodash'),
     jscsReporter = require('reporter-plus/jscs');
 
 module.exports = function buildJS(options) {
-  var gulpPlugins = loadGulpPlugins({
-          scope: ['devDependencies']
-        });
+  var gulpPlugins = loadGulpPlugins();
 
   options = _.defaults({}, options, {
     doCheck: true,
@@ -22,7 +20,7 @@ module.exports = function buildJS(options) {
     banner: '/* Built: ' + Date.now() + ' */\n',
     mapsDir: '.maps',
 
-    minifyRenameConfig: {
+    minifyRenameOptions: {
         extname: '.min.js'
       }
   });
@@ -45,7 +43,7 @@ module.exports = function buildJS(options) {
     options.doConcat && gulpPlugins.concat(options.concatName),
     options.doBanner && gulpPlugins.header(options.banner),
     options.doVersioning && gulpPlugins.rev(),
-    options.doMinify && gulpPlugins.rename(options.minifyRenameConfig),
+    options.doMinify && gulpPlugins.rename(options.minifyRenameOptions),
     options.doSourceMaps && gulpPlugins.sourcemaps.write(options.mapsDir)
   ]));
 };

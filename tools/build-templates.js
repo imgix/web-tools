@@ -6,7 +6,6 @@ var _ = require('lodash'),
 
 module.exports = function buildTemplates(options) {
   var gulpPlugins = loadGulpPlugins({
-    scope: ['devDependencies'],
     rename: {
         'gulp-ng-html2js': 'ngHtml2Js'
       }
@@ -24,24 +23,24 @@ module.exports = function buildTemplates(options) {
     concatName: 'override_me.tmpl.js',
     banner: '/* Built: ' + Date.now() + ' */\n',
 
-    htmlMinifyConfig: {
+    htmlMinifyOptions: {
         removeComments: true,
         collapseWhitespace: true,
         conservativeCollapse: true,
         collapseBooleanAttributes: true,
         removeRedundantAttributes: true
       },
-    ngHtml2JsConfig: {
+    ngHtml2JsOptions: {
         declareModule: false,
         moduleName: 'override.me',
         rename: function(templateURL) {
             return path.parse(templateURL).base;
           }
       },
-    renameConfig: {
+    renameOptions: {
         extname: '.tmpl.js'
       },
-    minifyRenameConfig: {
+    minifyRenameOptions: {
         extname: '.min.js'
       }
   });
@@ -54,15 +53,15 @@ module.exports = function buildTemplates(options) {
     options.doCheck && gulpPlugins.htmlhint.reporter(htmlhintReporter),
 
     // Processing pipeline
-    options.doMinify && gulpPlugins.htmlmin(options.htmlMinifyConfig),
-    gulpPlugins.ngHtml2Js(options.ngHtml2JsConfig),
-    gulpPlugins.rename(options.renameConfig),
+    options.doMinify && gulpPlugins.htmlmin(options.htmlMinifyOptions),
+    gulpPlugins.ngHtml2Js(options.ngHtml2JsOptions),
+    gulpPlugins.rename(options.renameOptions),
 
     // Productionization pipeline
     options.doMinify && gulpPlugins.uglify(),
     options.doConcat && gulpPlugins.concat(options.concatName),
     options.doBanner && gulpPlugins.header(options.banner),
     options.doVersioning && gulpPlugins.rev(),
-    options.doMinify && gulpPlugins.rename(options.minifyRenameConfig),
+    options.doMinify && gulpPlugins.rename(options.minifyRenameOptions),
   ]));
 };

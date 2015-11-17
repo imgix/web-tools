@@ -3,35 +3,31 @@ var _ = require('lodash'),
     loadGulpPlugins = require('gulp-load-plugins');
 
 module.exports = function buildSVG(options) {
-  var gulpPlugins = loadGulpPlugins({
-          scope: ['devDependencies']
-        });
+  var gulpPlugins = loadGulpPlugins();
 
   options = _.defaults({}, options, {
     doMinify: false,
 
     concatName: 'override_me.svg',
 
-    svgStoreConfig: {
-        svg: {xmlns: 'http://www.w3.org/2000/svg'}
-      },
-    svgMinConfig: {
+    svgStoreOptions: {},
+    svgMinOptions: {
         plugins: [
             {cleanupIDs: false}
           ]
       },
-    minifyRenameConfig: {
+    minifyRenameOptions: {
         extname: '.min.svg'
       }
   });
 
   return combine(_.compact([
     // Processing pipeline
-    gulpPlugins.svgstore(options.svgStoreConfig),
+    gulpPlugins.svgstore(options.svgStoreOptions),
     gulpPlugins.rename(options.concatName),
 
     // Productionization pipeline
-    options.doMinify && gulpPlugins.svgmin(options.svgMinConfig),
-    options.doMinify && gulpPlugins.rename(options.minifyRenameConfig)
+    options.doMinify && gulpPlugins.svgmin(options.svgMinOptions),
+    options.doMinify && gulpPlugins.rename(options.minifyRenameOptions)
   ]));
 };

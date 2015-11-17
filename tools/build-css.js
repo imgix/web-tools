@@ -4,10 +4,10 @@ var _ = require('lodash'),
     CHECK_PLUGINS,
     PROCESS_PLUGINS;
 
-function getPostCSSPlugins(pluginList, pluginConfigs) {
-  return _.map(pluginList, function requirePluginWithConfig(plugin) {
-    var config = _.get(pluginConfigs, plugin);
-    return require(plugin)(config);
+function getPostCSSPlugins(pluginList, pluginOptions) {
+  return _.map(pluginList, function requirePluginWithOptions(plugin) {
+    var options = _.get(pluginOptions, plugin);
+    return require(plugin)(options);
   });
 }
 
@@ -52,9 +52,7 @@ PROCESS_PLUGINS = [
 ];
 
 module.exports = function buildCSS(options) {
-  var gulpPlugins = loadGulpPlugins({
-          scope: ['devDependencies']
-        });
+  var gulpPlugins = loadGulpPlugins();
 
   options = _.defaultsDeep({}, options, {
     doCheck: true,
@@ -69,10 +67,10 @@ module.exports = function buildCSS(options) {
     banner: '/* Built: ' + Date.now() + ' */\n',
     mapsDir: '.maps',
 
-    postCSSConfig: {
+    postCSSOptions: {
         parser: require('postcss-scss')
       },
-    pluginConfigs: {
+    pluginOptions: {
         stylelint: {
             rules: require('../runcoms/rc.stylelint.json'),
             plugins: {
@@ -90,7 +88,7 @@ module.exports = function buildCSS(options) {
               }
           }
       },
-    minifyRenameConfig: {
+    minifyRenameOptions: {
         extname: '.min.css'
       }
   });
@@ -98,15 +96,15 @@ module.exports = function buildCSS(options) {
   return combine(_.compact([
       // Checking pipeline
       options.doCheck && gulpPlugins.postcss(
-          getPostCSSPlugins(CHECK_PLUGINS, options.pluginConfigs),
-          options.postCSSConfig
+          getPostCSSPlugins(CHECK_PLUGINS, options.pluginOptions),
+          options.postCSSOptions
         ),
 
       // Processing pipeline
       options.doSourceMaps && gulpPlugins.sourcemaps.init(),
       options.doProcessing && gulpPlugins.postcss(
-          getPostCSSPlugins(PROCESS_PLUGINS, options.pluginConfigs),
-          options.postCSSConfig
+          getPostCSSPlugins(PROCESS_PLUGINS, options.pluginOptions),
+          options.postCSSOptions
         ),
 
       // Productionization pipeline
@@ -114,7 +112,7 @@ module.exports = function buildCSS(options) {
       options.doConcat && gulpPlugins.concat(options.concatName),
       options.doBanner && gulpPlugins.header(options.banner),
       options.doVersioning && gulpPlugins.rev(),
-      options.doMinify && gulpPlugins.rename(options.minifyRenameConfig),
+      options.doMinify && gulpPlugins.rename(options.minifyRenameOptions),
       options.doSourceMaps && gulpPlugins.sourcemaps.write(options.mapsDir),
   ]));
 };

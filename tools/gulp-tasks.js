@@ -2,440 +2,370 @@ var _ = require('lodash'),
     path = require('path'),
     fs = require('fs'),
     merge = require('merge2'),
+    combine = require('stream-combiner'),
     args = require('yargs').argv,
-    runSequence,
-    loadPlugins = require('gulp-load-plugins'),
     mainBowerFiles = require('main-bower-files'),
+    gutil = require('gulp-util'),
+    builders = require('./builders.js'),
     streamCache = require('./stream-cache.js');
 
-module.exports = function setupGulpTasks(gulp, configFactory, taskOptions) {
-  var config,
-      localURL,
-      server,
-      plugins;
+module.exports = function setupGulpTasks(gulp, configFactory) {
+  var runningTask,
+      config,
+      hasAppAssets,
+      hasExtAssets,
+      getExternalFiles,
+      getServerURL,
+      appServer,
+      runSequence,
+      gulpPlugins,
+      gulpMetadata;
 
-  function setConfig(withArgs) {
-    config = configFactory(withArgs);
-  }
+  runningTask = _.get(args, '_[0]') || 'default';
 
-  // We can't require runSequence without Gulp being defined first
+  // Get config based on the arguments given
+  config = configFactory(runningTask, args);
+
+  // Set global vars at outset
+  hasAppAssets = !_.isEmpty(config.appAssets),
+  hasExtAssets = !_.isEmpty(config.extAssets);
+
+  // We can't set up these dependencies without Gulp being defined first
   runSequence = require('run-sequence').use(gulp);
+  gulpMetadata = require('./gulp-metadata.js')(gulp);
+  gulpPlugins = require('gulp-load-plugins')();
 
-  // Set global config at outset
-  setConfig(args);
-
-  taskOptions = _.defaultsDeep({}, taskOptions, {
-    build: { // Set to false to ignore all build tasks
-        js: !!config.srcFiles.js,
-        templates: !!config.srcFiles.templates,
-        css: !!config.srcFiles.css,
-        svg: !!config.srcFiles.svg,
-        partials: !!config.srcFiles.partials,
-        misc: !!config.srcFiles.misc,
-        html: !!config.srcFiles.html,
-        deps: !!config.bower
-      },
-    watch: { // Set to false to ignore watch tasks
-        js: !!config.srcFiles.js,
-        templates: !!config.srcFiles.templates,
-        css: !!config.srcFiles.css,
-        svg: !!config.srcFiles.svg,
-        partials: !!config.srcFiles.partials,
-        misc: !!config.srcFiles.misc,
-        html: !!config.srcFiles.html,
-        deps: !!config.bower
-      },
-    serve: !!config.server, // Set to false to ignore server tasks
-    test: { // Set to false to ignore testing tasks
-        unit: !!config.testFiles.unit,
-        integration: !!config.testFiles.integration
-      }
+  // Parsing the bower.json file is expensive, so only invoke this function once
+  getExternalFiles = _.once(function getExternalFilesOnce() {
+    return mainBowerFiles({
+      paths: {
+          bowerJson: config.bower.json,
+          bowerDirectory: config.bower.components
+        }
+    });
   });
 
-  // Lazy-load plugins
-  plugins = loadPlugins();
-
-  localURL = (function getAppUrl() {
-    var protocol,
-        hostname,
-        port;
-
-    if (config.server) {
-      protocol = config.server.ssl ? 'https' : 'http';
-      hostname = config.server.hostname;
-      port = config.server.port ? (':' + config.server.port) : '';
+  // This function should only be invoked once per config object
+  getServerURL = _.memoize(function getAppURLOnce(serverConfig) {
+    var protocol = serverConfig.ssl ? 'https' : 'http',
+        hostname = serverConfig.hostname,
+        port = serverConfig.port ? (':' + serverConfig.port) : '';
 
       return protocol + '://' + hostname + port;
-    }
-  })();
+  }, JSON.stringify);
 
   // This prevents node from throwing a warning about memory leaks: http://stackoverflow.com/questions/9768444
   process.setMaxListeners(0);
 
-  /*--- Default Task ---*/
-  gulp.task('default', function(done) {
-    var tasks = _.compact([
-      !!taskOptions.build ? 'build' : undefined,
-      !!taskOptions.serve ? 'serve' : undefined,
-      !!taskOptions.watch ? 'watch' : undefined,
-      done
-    ]);
-
-    runSequence.apply(null, tasks);
-  });
-
 
   /*--- Build Tasks ---*/
-  if (!!taskOptions.build) {
-
+  if (hasAppAssets || hasExtAssets) {
     // Main build task:
     gulp.task('build', function(done) {
       var buildTasks = _.compact([
-        taskOptions.build.js ? 'build-js' : null,
-        taskOptions.build.templates ? 'build-templates' : null,
-        taskOptions.build.css ? 'build-css' : null,
-        taskOptions.build.svg ? 'build-svg' : null,
-        taskOptions.build.partials ? 'build-partials' : null,
-        taskOptions.build.misc ? 'build-misc' : null,
-        taskOptions.build.html ? 'build-html' : null,
-        taskOptions.build.deps ? 'build-deps' : null,
+        !_.isEmpty(config.appAssets) && 'build-app',
+        !_.isEmpty(config.extAssets) && 'build-ext'
       ]);
 
       runSequence(
-        'clean',
+        'build-clean',
         buildTasks,
         done
       );
     });
-
-    // The following tasks should only need to be called directly when diagnosing build problems
-
-    gulp.task('clean', function() {
-      return gulp.src(config.destPaths.base, {read: false})
-        .pipe(plugins.clean());
+    gulpMetadata.addTask('build', {
+      description: 'Process and/or move all assets to this project\'s destination directory',
+      category: 'main',
+      weight: 1
     });
 
-    if(taskOptions.build.js) {
-      gulp.task('build-js', function() {
-        var buildJS = require('./build-js.js');
+    // Task to clean destination
+    gulp.task('build-clean', function() {
+      return gulp.src(config.destPath, {read: false})
+        .pipe(gulpPlugins.clean());
+    });
+    gulpMetadata.addTask('build-clean', {
+      description: 'Clear and delete the destination directory of this project\'s build process.',
+      category: 'build'
+    });
 
-        return gulp.src(config.srcFiles.js)
-          .pipe(buildJS(config.buildOptions.js))
-          .pipe(gulp.dest(config.destPaths.js))
-          .pipe(streamCache.put('js'));
-      });
-    }
-
-    if(taskOptions.build.templates) {
-      gulp.task('build-templates', function() {
-        var buildTemplates = require('./build-templates.js');
-
-        return gulp.src(config.srcFiles.templates)
-          .pipe(buildTemplates(config.buildOptions.templates))
-          .pipe(gulp.dest(config.destPaths.templates))
-          .pipe(streamCache.put('templates'));
-      });
-    }
-
-    if(taskOptions.build.css) {
-      gulp.task('build-css', function() {
-        var buildCSS = require('./build-css.js');
-
-        return gulp.src(config.srcFiles.css)
-          .pipe(buildCSS(config.buildOptions.css))
-          .pipe(gulp.dest(config.destPaths.css))
-          .pipe(streamCache.put('css'));
-      });
-    }
-
-    if(taskOptions.build.svg) {
-      gulp.task('build-svg', function() {
-        var buildSVG = require('./build-svg.js');
-
-        return gulp.src(config.srcFiles.svg)
-          .pipe(buildSVG(config.buildOptions.svg))
-          .pipe(gulp.dest(config.destPaths.svg))
-          .pipe(streamCache.put('svg'));
-      });
-    }
-
-    if(taskOptions.build.partials) {
-      gulp.task('build-partials', function() {
-        var buildPartials = require('./build-partials.js');
-
-        return gulp.src(config.srcFiles.partials)
-          .pipe(buildPartials(config.buildOptions.partials))
-          .pipe(gulp.dest(config.destPaths.partials))
-          .pipe(streamCache.put('partials'));
-      });
-    }
-
-    if(taskOptions.build.misc) {
-      gulp.task('build-misc', function() {
-        return gulp.src(config.srcFiles.misc)
-          .pipe(gulp.dest(config.destPaths.misc))
-          .pipe(streamCache.put('misc'));
-      });
-    }
-
-    if(taskOptions.build.html) {
-      gulp.task('build-html',
-        _.compact([ // List of tasks that must execute first
-            taskOptions.build.js ? 'build-js' : null,
-            taskOptions.build.templates ? 'build-templates' : null,
-            taskOptions.build.css ? 'build-css' : null,
-            taskOptions.build.svg ? 'build-svg' : null,
-            taskOptions.build.partials ? 'build-partials' : null,
-            taskOptions.build.deps ? 'build-deps' : null,
-          ]),
-        function() {
-          var buildHTML = require('./build-html.js'),
-              assetStreams = {};
-
-          // Combine app assets into a single injectable stream
-          assetStreams.app = merge(_.compact([
-            streamCache.get('js'),
-            streamCache.get('templates'),
-            streamCache.get('css'),
-            streamCache.get('svg'),
-            streamCache.get('partials')
-          ]));
-
-          if (taskOptions.build.deps) {
-            assetStreams.deps = streamCache.get('deps');
-          }
-
-          return gulp.src(config.srcFiles.svg)
-            // Pipe to destination before processing so the injected assets will have the correct relative URLs
-            .pipe(gulp.dest(config.destPaths.html))
-            .pipe(buildHTML(config.buildOptions.html, assetStreams))
-            .pipe(gulp.dest(config.destPaths.html))
-            .pipe(streamCache.put('html'));
-        }
-      );
-    }
-
-    if (taskOptions.build.deps) {
-      gulp.task('build-deps', function() {
-        var bowerStream = gulp.src(mainBowerFiles({
-                paths: {
-                    bowerJson: config.bower.json,
-                    bowerDirectory: config.bower.components
-                  }
-              })),
-            destStreams = {},
-            buildCSS = require('./build-css.js'),
-            buildJS = require('./build-js.js');
-
-        // Build JS
-        destStreams.js = bowerStream
-          .pipe(plugins.filter('**/*.js'))
-          .pipe(buildJS(_.defaults({
-              doCheck: false,
-              doBanner: false,
-              concatName: 'deps.js'
-            }, config.buildOptions.js)))
-          .pipe(gulp.dest(path.join(config.destPaths.js, 'dependencies')));
-
-        // Build CSS
-        destStreams.css = bowerStream
-          .pipe(plugins.filter('**/*.css'))
-          .pipe(buildCSS(_.defaults({
-              doCheck: false,
-              doBanner: false,
-              concatName: 'deps.css'
-            }, config.buildOptions.css)))
-          .pipe(gulp.dest(path.join(config.destPaths.css, 'dependencies')));
-
-        // Move SVG (assume they're already processed)
-        destStreams.svg = bowerStream
-          .pipe(plugins.filter('**/*.svg'))
-          .pipe(gulp.dest(path.join(config.destPaths.svg, 'dependencies')));
-
-        // Register partials (don't bother processing or moving them)
-        destStreams.partials = bowerStream
-          .pipe(plugins.filter('**/*.html'));
-
-        // Move misc (assume they're already processed)
-        destStreams.misc = bowerStream
-          .pipe(plugins.filter([
-              '*',
-              '!*.js',
-              '!*.css',
-              '!*.svg',
-              '!*.html'
-            ]))
-          .pipe(gulp.dest(path.join(config.destPaths.misc)));
-
-        return merge(_.values(destStreams))
-          .pipe(streamCache.put('deps'))
-      });
-    }
-  }
-
-
-  /*--- Watch Tasks ---*/
-  if (!!taskOptions.watch) {
-
-    // Main watch task:
-    gulp.task('watch', function() {
-      function onChange(event, component, changeOptions) {
-        var tasks;
-
-        changeOptions = _.defaults({}, changeOptions, {
-          rebuildHtml: (event.type === 'added' || event.type === 'deleted')
+    if (hasAppAssets) {
+      // Main app-asset build task:
+      gulp.task('build-app', function(done) {
+        var tasks = _.map(config.appAssets, function prefix(assetOptions, assetType) {
+          return 'build-app-' + assetType;
         });
 
-        tasks = _.compact([
-          'build-' + component,
-          // Re-build the HTML so file changes are properly referenced
-          taskOptions.build.html && changeOptions.rebuildHtml ? 'build-html' : null,
-          taskOptions.serve ? 'serve' : null
-        ]);
-
-        runSequence.apply(null, tasks);
-      }
-
-      if (taskOptions.watch.js && taskOptions.build.js) {
-        gulp.watch(
-          config.srcFiles.js,
-          _.partialRight(onChange, 'js')
+        runSequence(
+          tasks,
+          done
         );
-      }
+      });
+      gulpMetadata.addTask('build-app', {
+        description: 'Process and/or move all local assets to this project\'s destination directory',
+        category: 'build'
+      });
 
-      if (taskOptions.watch.templates && taskOptions.build.templates) {
-        gulp.watch(
-          config.srcFiles.templates,
-          _.partialRight(onChange, 'templates')
-        );
-      }
+      // Set up build task for each app asset type
+      _.each(config.appAssets, function addAppBuildTask(assetOptions, assetType) {
+        var appAssetDependencies,
+            extAssetDependencies,
+            taskDependencies = [];
 
-      if (taskOptions.watch.css && taskOptions.build.css) {
-        gulp.watch(
-          config.srcFiles.css,
-          _.partialRight(onChange, 'css')
-        );
-      }
+        function prefixAssetType(prefix, assetType) {
+          var prefixed = prefix + '-' + assetType;
+          taskDependencies.push('build-' + prefixed);
+          return prefixed;
+        }
 
-      if (taskOptions.watch.svg && taskOptions.build.svg) {
-        gulp.watch(
-          config.srcFiles.svg,
-          _.partialRight(onChange, 'svg')
-        );
-      }
+        appAssetDependencies = _.map(assetOptions.appAssetDependencies, _.partial(prefixAssetType, 'app'));
+        extAssetDependencies = _.map(assetOptions.extAssetDependencies, _.partial(prefixAssetType, 'ext'));
 
-      if (taskOptions.watch.partials && taskOptions.build.partials) {
-        gulp.watch(
-          config.srcFiles.partials,
-          _.partialRight(onChange, 'partials')
-        );
-      }
+        gulp.task('build-app-' + assetType, taskDependencies, function task() {
+          var assetDependencyStreams,
+              pipeline;
 
-      if (taskOptions.watch.misc && taskOptions.build.misc) {
-        gulp.watch(
-          config.srcFiles.misc,
-          _.partialRight(onChange, 'misc', {rebuildHtml: false})
-        );
-      }
+          if (taskDependencies.length) {
+            assetDependencyStreams = {
+              app: merge(_(appAssetDependencies).map(streamCache.get).compact().value()),
+              ext: merge(_(extAssetDependencies).map(streamCache.get).compact().value())
+            };
+          }
 
-      if (taskOptions.watch.html && taskOptions.build.html) {
-        gulp.watch(
-          config.srcFiles.html,
-          _.partialRight(onChange, 'html', {rebuildHtml: false})
-        );
-      }
+          pipeline = combine(_.compact([
+            assetOptions.dest && gulpPlugins.flatten(),
+            assetOptions.build && !!builders[assetType] && builders[assetType](assetOptions.buildOptions, assetDependencyStreams),
+            assetOptions.dest && gulp.dest(assetOptions.dest),
+            streamCache.put('app-' + assetType)
+          ]));
 
-      if (taskOptions.watch.deps && taskOptions.build.deps) {
-        gulp.watch(
-          path.join(config.bower.components, '**', '*'),
-          _.partialRight(onChange, 'deps')
+          return gulp.src(assetOptions.src).pipe(pipeline);
+        });
+        gulpMetadata.addTask('build-app-' + assetType, {
+          description: 'Process and/or move local "' + assetType + '" assets to this project\'s destination directory',
+          category: 'build'
+        });
+      });
+    }
+
+    if (hasExtAssets) {
+      // Main external-asset build task:
+      gulp.task('build-ext', function(done) {
+        var tasks = _.map(config.extAssets, function prefix(assetOptions, assetType) {
+          return 'build-ext-' + assetType;
+        });
+
+        runSequence(
+          tasks,
+          done
         );
-      }
-    });
+      });
+      gulpMetadata.addTask('build-ext', {
+        description: 'Process and/or move all external assets to this project\'s destination directory',
+        category: 'build'
+      });
+
+      // Set up build task for each ext asset type
+      _.each(config.extAssets, function addExtBuildTask(assetOptions, assetType) {
+        gulp.task('build-ext-' + assetType, function task() {
+          var pipeline = combine(_.compact([
+            gulpPlugins.filter(assetOptions.filter || '*.' + assetType),
+            assetOptions.build && !!builders[assetType] && builders[assetType](assetOptions.buildOptions),
+            assetOptions.dest && gulp.dest(assetOptions.dest),
+            streamCache.put('ext-' + assetType)
+          ]));
+
+          return gulp.src(getExternalFiles()).pipe(pipeline);
+        });
+        gulpMetadata.addTask('build-ext-' + assetType, {
+          description: 'Process and/or move external "' + assetType + '" assets to this project\'s destination directory',
+          category: 'build'
+        });
+      });
+    }
   }
 
 
   /*--- Serve Tasks ---*/
-  if (!!taskOptions.serve) {
-
+  if (!!config.server) {
     // Main serve task:
     gulp.task('serve', function(done) {
       runSequence(
-        'start-server',
-        'chrome-load',
+        'serve-start',
+        'serve-load',
         done
       );
     });
+    gulpMetadata.addTask('serve', {
+      description: 'Start a local server for this project and view it in Chrome.',
+      notes: ['The task will finish once the server has started, but the server will run in the background until the `stop-server` task is called.'],
+      category: 'main',
+      weight: 2
+    });
 
-    gulp.task('start-server', function(done) {
+    gulp.task('serve-start', function(done) {
       var express = require('express'),
           app;
 
-      if (!server) {
-        app = express();
+      // If the server is already running, no need to do anything
+      if (appServer) {
+        done();
+        return;
+      }
 
-        app.use(express.static(config.destPaths.js));
-        app.use(express.static(config.destPaths.css));
-        app.use(express.static(config.destPaths.svg));
-        app.use(express.static(config.destPaths.misc));
+      app = express();
+      app.use(express.static(config.destPath));
 
+      if (config.appAssets.html) {
         app.get('*', function(request, response) {
           response.sendFile('index.html', {
-            root: config.destPaths.html
+            root: config.appAssets.html.dest
           });
         });
-
-        if (config.server.ssl) {
-          server = require('https').createServer({
-            key: fs.readFileSync(config.server.key),
-            cert: fs.readFileSync(config.server.cert),
-            requestCert: false,
-            rejectUnauthorized: false
-          }, app);
-        } else {
-          server = require('http').createServer(app);
-        }
-
-        server.listen(config.server.port, done);
       }
+
+      if (config.server.ssl) {
+        appServer = require('https').createServer({
+          key: fs.readFileSync(config.server.key),
+          cert: fs.readFileSync(config.server.cert),
+          requestCert: false,
+          rejectUnauthorized: false
+        }, app);
+      } else {
+        appServer = require('http').createServer(app);
+      }
+
+      appServer.listen(config.server.port, done);
+    });
+    gulpMetadata.addTask('serve-start', {
+      description: 'Start a local server for this project.',
+      notes: ['The task will finish once the server has started, but the server will run in the background until the `stop-server` task is called.'],
+      category: 'serve'
     });
 
-    gulp.task('stop-server', function() {
-      if (server) {
-        server.close();
+    gulp.task('serve-stop', function() {
+      if (appServer) {
+        appServer.close();
+        appServer = undefined;
       }
     });
+    gulpMetadata.addTask('serve-stop', {
+      description: 'Shut down the local server for this project, if it\'s running.',
+      category: 'serve'
+    });
 
-    gulp.task('chrome-load', function() {
-      require('./chrome-load.js')(localURL);
+    gulp.task('serve-load', function() {
+      require('./chrome-load.js')(getServerURL(config.server));
+    });
+    gulpMetadata.addTask('serve-load', {
+      description: 'Reload existing Chrome tabs that are pointing to the local server, or open a new tab if none exists.',
+      category: 'serve'
     });
   }
 
 
-  /*--- Test Tasks ---*/
-  if (!!taskOptions.test) {
+  /*--- Watch Tasks ---*/
+  if (hasAppAssets || hasExtAssets) {
+    // Main watch task:
+    gulp.task('watch', function(done) {
+      var watchTasks = _.compact([
+        hasAppAssets && 'watch-app',
+        hasExtAssets && 'watch-ext'
+      ]);
 
+      runSequence(watchTasks, done);
+    });
+    gulpMetadata.addTask('watch', {
+      description: 'Watch all assets and automatically build and reload the browser when a change is made.',
+      notes: ['This task will run indefinitely until it is killed.'],
+      category: 'main',
+      weight: 3
+    });
+
+    if (hasAppAssets) {
+      gulp.task('watch-app', function() {
+        // Set up a watcher for each app asset type
+        _.each(config.appAssets, function addAppWatcher(assetOptions, assetType) {
+          gulp.watch(assetOptions.src, function onChange() {
+            var tasks = ['build-app-' + assetType];
+
+            // Queue a build for any other assets that are dependent on this one
+            _.each(config.appAssets, function examineAppDependencies(dependentAssetOptions, dependentAssetType) {
+              if (_.contains(dependentAssetOptions.appAssetDependencies, assetType)) {
+                tasks.push('build-app-' + dependentAssetType);
+              }
+            });
+
+            if (!!config.server) {
+              tasks.push('serve');
+            }
+
+            runSequence(tasks);
+          });
+        });
+      });
+      gulpMetadata.addTask('watch-app', {
+        description: 'Watch local assets and automatically build and reload the browser when a change is made.',
+        notes: ['This task will run indefinitely until it is killed.'],
+        category: 'watch'
+      });
+    }
+
+    if (hasExtAssets) {
+      gulp.task('watch-ext', function() {
+        gulp.watch(config.bower.components, function onChange() {
+          var tasks = ['build-ext'];
+
+          // Queue a build for any app assets that have ext dependencies
+          _.each(config.appAssets, function examineAppDependencies(dependentAssetOptions, dependentAssetType) {
+            if (!_.isEmpty(dependentAssetOptions.extAssetDependencies)) {
+              tasks.push('build-app-' + dependentAssetType);
+            }
+          });
+
+          if (!!config.server) {
+            tasks.push('serve');
+          }
+
+          runSequence(tasks);
+        });
+      });
+      gulpMetadata.addTask('watch-ext', {
+        description: 'Watch external assets and automatically build and reload the browser when a change is made.',
+        notes: ['This task will run indefinitely until it is killed.'],
+        category: 'watch'
+      });
+    }
+  }
+
+
+  /*--- Test Tasks ---*/
+  if (!!config.unitTests || !!config.integrationTests) {
     // Main test task:
     gulp.task('test', function(done) {
       var testTasks = _.compact([
-        taskOptions.test.unit ? 'test-unit' : null,
-        taskOptions.test.integration ? 'test-integration' : null
+        !!config.unitTests && 'test-unit',
+        !!config.integrationTests && 'test-integration'
       ]);
 
       runSequence(testTasks, done);
     });
+    gulpMetadata.addTask('test', {
+      description: 'Run all tests for this project',
+      category: 'main',
+      weight: 4,
+      arguments: {
+          'match': '[Optional] Only test files with names containing the given string will be run.'
+        }
+    });
 
-    if (taskOptions.test.unit) {
+    if (!!config.unitTests) {
       gulp.task('test-unit', function() {
-        var testUnit = require('./test-unit.js'),
+        var argFilterPipeline = require('./arg-filter.js'),
+            testUnitPipeline = require('./test-unit.js'),
             bowerStream,
             appStream,
-            testStream,
-            matcher;
-
-        if (!config.karma) {
-          return;
-        }
+            testStream;
 
         bowerStream = gulp.src(mainBowerFiles({
             includeDev: true,
@@ -445,58 +375,94 @@ module.exports = function setupGulpTasks(gulp, configFactory, taskOptions) {
               },
             filter: '**/*.js'
           }));
-        appStream = gulp.src(_.flatten([config.srcFiles.js, config.srcFiles.templates]), {read: false});
-        testStream = gulp.src(config.testFiles.unit, {read: false});
 
-        if (!!args.match) {
-          matcher = new RegExp(args.match.replace('/', '\\/'));
+        appStream = gulp.src(_([
+          _.get(config, 'components.js.src'),
+          _.get(config, 'components.templates.src')
+        ]).flatten().compact().value(), {read: false});
 
-          testStream = testStream.pipe(plugins.filter(function filterFiles(file) {
-            return matcher.test(file.path);
-          }));
-        }
+        testStream = gulp.src(config.testFiles.src, {read: false})
+          .pipe(argFilterPipeline(args));
 
         return merge(
           bowerStream,
           appStream,
           testStream
-        ).pipe(testUnit(config));
+        ).pipe(testUnitPipeline(config));
+      });
+      gulpMetadata.addTask('test-unit', {
+        description: 'Run unit tests with Karma.',
+        category: 'test',
+        arguments: {
+            'match': '[Optional] Only test files with names containing the given string will be run.'
+          }
       });
     }
 
-    // We can't run integration tests without all three of these
-    if (taskOptions.test.integration && !!taskOptions.build && !!taskOptions.serve) {
+    if (!!config.integrationTests) {
       gulp.task('test-integration', function(done) {
-        var testIntegration = require('./test-integration.js'),
-            stream,
-            matcher;
-
-        // Set global config for `env=test`
-        setConfig(_.merge({env: 'test'}, args));
-
-        // Set up stream, with filtration
-        stream = gulp.src(config.testFiles.integration, {read: false});
-
-        if (!!args.match) {
-          matcher = new RegExp(args.match.replace('/', '\\/'));
-
-          stream = stream.pipe(plugins.filter(function filterFiles(file) {
-            return matcher.test(file.path);
-          }));
-        }
-
         runSequence(
-          'build',
-          'start-server',
-          function runTests() {
-              return stream.pipe(testIntegration(config));
-            },
-          'stop-server',
+          // 'build',
+          'serve-start',
+          'test-integration-run',
+          'serve-stop',
           done
         );
       });
+      gulpMetadata.addTask('test-integration', {
+        description: 'Initialize, run, and clean up integration tests (including visual regression tests) with Selenium and Webdriver.',
+        notes: ['This task will override the `env` argument and always run in the `test` environment.'],
+        category: 'test',
+        arguments: {
+            'match': '[Optional] Only test files with names containing the given string will be run.'
+          }
+      });
+
+      gulp.task('test-integration-run', function() {
+        var argFilterPipeline = require('./arg-filter.js'),
+            testIntegrationPipeline = require('./test-integration.js');
+
+        // Set up stream, with filtration
+        return gulp.src(config.integrationTests.src, {read: false})
+          .pipe(argFilterPipeline(args))
+          .pipe(testIntegrationPipeline(config.integrationTests, getServerURL(config.server)))
+      });
+      gulpMetadata.addTask('test-integration-run', {
+        description: 'Initialize and run integration tests (including visual regression tests) with Selenium and Webdriver.',
+        category: 'test',
+        arguments: {
+            'match': '[Optional] Only test files with names containing the given string will be run.'
+          }
+      });
     }
   }
+
+
+  /*--- Default Task ---*/
+  gulp.task('default', function(done) {
+    var mainTasks = _.compact([
+      !!gulp.tasks.build && 'build',
+      !!gulp.tasks.serve && 'serve',
+      !!gulp.tasks.watch && 'watch'
+    ]);
+
+    runSequence.apply(null, mainTasks.concat(done));
+  });
+  gulpMetadata.addTask('default', {
+    description: 'Run the most important tasks for developing this project',
+    category: 'main',
+    weight: 0
+  });
+
+
+  /*--- Help Task ---*/
+  gulp.task('help', function() {
+    gutil.log(gulpMetadata.describeAll());
+  });
+  gulpMetadata.addTask('help', {
+    description: 'List all available Gulp tasks and arguments',
+    category: 'misc'
+  });
 
   return gulp;
 };

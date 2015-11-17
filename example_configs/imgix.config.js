@@ -1,130 +1,195 @@
 ar path = require('path'),
     _ = require('lodash');
 
-module.exports = function(args) {
-  var name = 'imgix-webapp',
-      ngName = 'imgix.webapp',
+module.exports = function(task, args) {
+  var name = 'imgix-app',
+      ngName = 'imgix.app',
       appBase = '.',
 
-      // Set environment based on args passed in
-      allEnvs = ['dev', 'test', 'prod'],
-      env = _.includes(allEnvs, args.env) ? args.env : allEnvs[0],
-      isProd = (env === 'prod'),
-
-      // Base paths for src and dest files
-      appSrcBase = path.join(appBase, 'app'),
-      appDestBase = path.join(appBase, '.' + env + '_srv'),
-
       // Server numbers count up from here, per-environment
-      baseServerPort = 9120,
+      baseServerPort = 9870,
 
-      // Template for banner that goes atop all compiled assets.
-      banner = '/* ' + name + ' - Built: ' + Date.now() + ' */\n';
+      // Template for banner that goes atop all compiled assets
+      banner = '/* ' + name + ' - Built: ' + Date.now() + ' */\n',
+      allEnvs = ['dev', 'test', 'prod'],
+      env,
+      isProd,
+      appSrcBase,
+      appTestBase,
+      appDestBase;
+
+  // Set environment based on task and args passed in
+  if (/^test/.test(task)) {
+    env = 'test';
+  } else if (args.env && _.includes(allEnvs, args.env)) {
+    env = args.test;
+  } else {
+    env = 'test';
+  }
+
+  isProd = (env === 'prod');
+
+  // Base paths for src and dest files
+  appSrcBase = path.join(appBase, 'app');
+  appDestBase = path.join(appBase, '.' + env + '_srv');
+  appTestBase = path.join(appBase, 'test');
 
   return {
     name: name,
     ngModule: ngName,
+    destPath: appDestBase,
 
-    srcFiles: {
-        js: [
-            path.join(appSrcBase, 'base', 'scripts', 'app.js'),
-            path.join(appSrcBase, 'base', '**', '*.js'),
-            path.join(appSrcBase, '**', '*.js'),
-            '!' + path.join('**', 'test.*.js')
-          ],
-        templates: [
-            path.join(appSrcBase, '**', '*.tmpl')
-          ],
-        css: [
-            path.join(appSrcBase, 'base', '**', '*.css'),
-            path.join(appSrcBase, '**', '*.css')
-          ],
-        svg: [
-            path.join(appSrcBase, 'static', 'svg', '**', '*.svg')
-          ],
-        html: [
-            path.join(appSrcBase, '*.html')
-          ],
-        misc: [
-            path.join(appSrcBase, 'static', 'misc', '**', '*.*')
-          ]
-      },
-
-    testFiles: {
-        unit: [
-            path.join(appSrcBase, '**', 'test.*.js')
-          ],
-        integration: [
-            path.join(appBase, 'test', '**', 'spec.*.js')
-          ]
-      },
-
-    destPaths: {
-        base:
-          appDestBase,
-        js:
-          path.join(appDestBase, 'scripts'),
-        templates:
-          path.join(appDestBase, 'scripts'),
-        css:
-          path.join(appDestBase, 'styles'),
-        svg:
-          path.join(appDestBase, 'svg'),
-        html:
-          appDestBase,
-        misc:
-          appDestBase
-      },
-
-    // Options describing how to build assets
-    buildOptions: {
+    // The components object tells web-tools which gulp tasks to set up and how
+    appAssets: {
         js: {
-            doMinify: isProd,
-            doConcat: isProd,
-            doBanner: isProd,
-            doVersioning: isProd,
-            doSourcemaps: isProd,
-            concatName: name + '.js',
-            banner: banner
+            src: [
+                path.join(appSrcBase, 'base', '**', '*.js'),
+                path.join(appSrcBase, '**', '*.js'),
+                '!' + path.join('**', 'test.*.js'),
+                '!' + path.join('**', 'test-data.*.js')
+              ],
+            dest: path.join(appDestBase, 'scripts'),
+            build: true,
+            buildOptions: {
+                doMinify: isProd,
+                doConcat: isProd,
+                doBanner: isProd,
+                doVersioning: isProd,
+                doSourcemaps: isProd,
+                concatName: name + '.js',
+                banner: banner
+              }
           },
         templates: {
-            doMinify: isProd,
-            doConcat: isProd,
-            doBanner: isProd,
-            doVersioning: isProd,
-            doSourcemaps: isProd,
-            concatName: name + '.tmpl.js',
-            banner: banner,
-            ngHtml2JsConfig: {
-                moduleName: ngName
+            src: [
+                path.join(appSrcBase, '**', '*.tmpl')
+              ],
+            dest: path.join(appDestBase, 'scripts'),
+            build: true,
+            buildOptions: {
+                doMinify: isProd,
+                doConcat: isProd,
+                doBanner: isProd,
+                doVersioning: isProd,
+                doSourcemaps: isProd,
+                concatName: name + '.tmpl.js',
+                banner: banner,
+                ngHtml2JsOptions: {
+                    moduleName: ngName
+                  }
               }
           },
         css: {
-            doMinify: isProd,
-            doConcat: isProd,
-            doBanner: isProd,
-            doVersioning: isProd,
-            doSourcemaps: isProd,
-            concatName: name + '.css',
-            banner: banner,
-            pluginConfigs: {
-                'postcss-import': {
-                    path: [path.join(appBase, 'base')]
+            src: [
+                path.join(appSrcBase, 'base', '**', '*.css'),
+                path.join(appSrcBase, '**', '*.css')
+              ],
+            dest: path.join(appDestBase, 'styles'),
+            build: true,
+            buildOptions: {
+                doMinify: isProd,
+                doConcat: isProd,
+                doBanner: isProd,
+                doVersioning: isProd,
+                doSourcemaps: isProd,
+                concatName: name + '.css',
+                banner: banner,
+                pluginOptions: {
+                    'postcss-import': {
+                        path: [
+                            path.join(appBase, 'base', 'styles')
+                          ]
+                      }
                   }
               }
           },
         svg: {
-            doMinify: isProd,
-            concatName: name + '.svg'
+            src: [
+                path.join(appSrcBase, 'static', 'svg', '**', '*.svg')
+              ],
+            dest: path.join(appDestBase, 'svg'),
+            build: true,
+            buildOptions: {
+                doMinify: isProd,
+                concatName: name + '.svg'
+              }
+          },
+        partials: {
+            src: [
+                path.join(appSrcBase, 'partials', '*.html')
+              ],
+            build: true,
+            buildOptions: {
+                doMinify: false, // No need to ever minify here, since minifying the whole page will take care of it
+                processOptions: {
+                    environment: env,
+                  }
+              }
           },
         html: {
-            doMinify: isProd,
-            injectConfig: {
-                ignorePath: appDestBase
+            src: [
+                path.join(appSrcBase, '*.html')
+              ],
+            dest: appDestBase,
+            build: true,
+            buildOptions: {
+                doMinify: isProd,
+                doInject: true,
+                injectOptions: {
+                    ignorePath: appDestBase
+                  },
+                processOptions: {
+                    environment: env,
+                  }
               },
-            processConfig: {
-                environment: env,
-              }
+            appAssetDependencies: [
+                'js',
+                'templates',
+                'css',
+                'svg',
+                'partials'
+              ],
+            extAssetDependencies: [
+                'js',
+                'css',
+                'svg',
+                'partials'
+              ]
+          },
+        misc: {
+            src: [
+                path.join(appSrcBase, 'static', 'misc', '**', '*.*')
+              ],
+            dest: appDestBase
+          }
+      },
+
+    extAssets: {
+        js: {
+            build: true,
+            buildOptions: {
+                doCheck: false,
+                doBanner: false,
+                concatName: 'libs.js'
+              },
+            dest: path.join(appDestBase, 'scripts', 'libs')
+          },
+        css: {
+            build: true,
+            buildOptions: {
+                doCheck: false,
+                doBanner: false,
+                concatName: 'libs.css'
+              },
+            dest: path.join(appDestBase, 'styles', 'libs')
+          },
+        svg: {},
+        partials: {
+            filter: path.join('**', '*.html')
+          },
+        fonts: {
+            filter: path.join('**', 'fonts', '*'),
+            dest: path.join(appDestBase, 'fonts')
           }
       },
 
@@ -142,14 +207,24 @@ module.exports = function(args) {
         cert: path.join(appBase, 'dev_certs', 'cert.pem')
       },
 
-    karma: {
-        browsers: ['Chrome', 'Firefox', 'Safari']
+    unitTests: {
+        src: [
+            path.join(appSrcBase, '**', 'test.*.js')
+          ],
+        karmaOptions: {
+            browsers: ['Chrome', 'Firefox', 'Safari']
+          }
       },
 
-    webdriver: {
+    integrationTests: {
+        src: [
+            path.join(appTestBase, '**', 'spec.*.js')
+          ],
         browser: 'Firefox',
-        defaultWidths: [320, 480, 640, 768, 1024],
-        screenshotPath: path.join(appBase, 'test')
+        eyeballOptions: {
+            screenshotRoot: appTestBase,
+            widths: [320, 480, 640, 768, 1024]
+          }
       }
   };
 }
