@@ -376,19 +376,19 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
             filter: '**/*.js'
           }));
 
-        appStream = gulp.src(_([
-          _.get(config, 'components.js.src'),
-          _.get(config, 'components.templates.src')
-        ]).flatten().compact().value(), {read: false});
+        appStream = merge([
+          gulp.src(_.get(config, 'appAssets.js.src'), {read: false}),
+          gulp.src(_.get(config, 'appAssets.templates.src'), {read: false})
+        ]);
 
-        testStream = gulp.src(config.testFiles.src, {read: false})
+        testStream = gulp.src(config.unitTests.src, {read: false})
           .pipe(argFilterPipeline(args));
 
         return merge(
           bowerStream,
           appStream,
           testStream
-        ).pipe(testUnitPipeline(config));
+        ).pipe(testUnitPipeline(config.unitTests.karmaOptions));
       });
       gulpMetadata.addTask('test-unit', {
         description: 'Run unit tests with Karma.',

@@ -212,7 +212,10 @@ module.exports = function(task, args) {
             path.join(appSrcBase, '**', 'test.*.js')
           ],
         karmaOptions: {
-            browsers: ['Chrome', 'Firefox', 'Safari']
+            browsers: ['Chrome', 'Firefox', 'Safari'],
+            ngHtml2JsPreprocessor: {
+                moduleName: ngName
+              }
           }
       },
 

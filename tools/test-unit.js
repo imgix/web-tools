@@ -7,39 +7,36 @@ module.exports = function testUnit(options) {
   var karmaFiles = [];
 
   options = _.defaultsDeep({}, options, {
-    browser: 'Firefox',
-    karmaOptions: {
-        // Honestly, these are the only three options you should care about
-        // Overwriting any of the other options will probably start fires
-        reporters: ['progress'],
-        browsers: ['PhantomJS'],
-        captureTimeout: 20 * 1000,
+    // Honestly, these are the only three options you should care about
+    // Overwriting any of the other options will probably start fires
+    reporters: ['progress'],
+    browsers: ['PhantomJS'],
+    captureTimeout: 20 * 1000,
 
-        autoWatch: false,
-        singleRun: true,
-        frameworks: [
-            'jasmine',
-            'jasmine-matchers'
-          ],
-        plugins: [
-            // We have to require() these because otherwise Karma will look in the wrong place
-            require('karma-jasmine'),
-            require('karma-jasmine-matchers'),
-            require('karma-ng-html2js-preprocessor'),
-            require('karma-phantomjs-launcher'),
-            require('karma-chrome-launcher'),
-            require('karma-firefox-launcher'),
-            require('karma-safari-launcher')
-          ],
-        preprocessors: {
-            '**/*.tmpl': 'ng-html2js'
+    autoWatch: false,
+    singleRun: true,
+    frameworks: [
+        'jasmine',
+        'jasmine-matchers'
+      ],
+    plugins: [
+        // We have to require() these because otherwise Karma will look in the wrong place
+        require('karma-jasmine'),
+        require('karma-jasmine-matchers'),
+        require('karma-ng-html2js-preprocessor'),
+        require('karma-phantomjs-launcher'),
+        require('karma-chrome-launcher'),
+        require('karma-firefox-launcher'),
+        require('karma-safari-launcher')
+      ],
+    preprocessors: {
+        '**/*.tmpl': 'ng-html2js'
+      },
+    ngHtml2JsPreprocessor: {
+        moduleName: 'override.me',
+        cacheIdFromPath: function(filePath) {
+            return path.basename(filePath);
           },
-        ngHtml2JsPreprocessor: {
-            cacheIdFromPath: function(filePath) {
-                return path.basename(filePath);
-              },
-            moduleName: config.ngModule
-          }
       }
   });
 
@@ -50,7 +47,7 @@ module.exports = function testUnit(options) {
         callback();
       },
     function flush(done) {
-        var karmaOptions = _.merge({}, options.karmaOptions, {
+        var karmaOptions = _.merge({}, options, {
           files: karmaFiles
         });
 
