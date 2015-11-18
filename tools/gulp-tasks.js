@@ -287,7 +287,8 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
         // Set up a watcher for each app asset type
         _.each(config.appAssets, function addAppWatcher(assetOptions, assetType) {
           gulp.watch(assetOptions.src, function onChange() {
-            var tasks = ['build-app-' + assetType];
+            var tasks = [],
+                buildTasks = ['build-app-' + assetType];
 
             // Queue a build for any other assets that are dependent on this one
             _.each(config.appAssets, function examineAppDependencies(dependentAssetOptions, dependentAssetType) {
@@ -296,11 +297,13 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
               }
             });
 
+            tasks.push(buildTasks);
+
             if (!!config.server) {
               tasks.push('serve');
             }
 
-            runSequence(tasks);
+            runSequence.apply(null, tasks);
           });
         });
       });
@@ -314,7 +317,8 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
     if (hasExtAssets) {
       gulp.task('watch-ext', function() {
         gulp.watch(config.bower.components, function onChange() {
-          var tasks = ['build-ext'];
+          var tasks = [],
+              buildTasks = ['build-ext'];
 
           // Queue a build for any app assets that have ext dependencies
           _.each(config.appAssets, function examineAppDependencies(dependentAssetOptions, dependentAssetType) {
@@ -323,11 +327,13 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
             }
           });
 
+          tasks.push(buildTasks);
+
           if (!!config.server) {
             tasks.push('serve');
           }
 
-          runSequence(tasks);
+          runSequence.apply(null, tasks);
         });
       });
       gulpMetadata.addTask('watch-ext', {
