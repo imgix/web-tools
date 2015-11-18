@@ -127,8 +127,8 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
 
           if (taskDependencies.length) {
             assetDependencyStreams = {
-              app: merge(_(appAssetDependencies).map(streamCache.get).compact().value()),
-              ext: merge(_(extAssetDependencies).map(streamCache.get).compact().value())
+              app: merge.apply(null, _(appAssetDependencies).map(streamCache.get).compact().value()),
+              ext: merge.apply(null, _(extAssetDependencies).map(streamCache.get).compact().value())
             };
           }
 
