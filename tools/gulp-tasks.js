@@ -408,7 +408,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
     if (!!config.integrationTests) {
       gulp.task('test-integration', function(done) {
         runSequence(
-          // 'build',
+          'build',
           'serve-start',
           'test-integration-run',
           'serve-stop',
