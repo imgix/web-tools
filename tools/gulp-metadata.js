@@ -19,7 +19,8 @@ module.exports = function setUp(gulp) {
         taskMetadata[name] = metadata;
       },
     describeAll: function() {
-        var output = '',
+        var tables = {},
+            output = '',
             groupedTasks;
 
         function makeSection(table, task) {
@@ -77,11 +78,20 @@ module.exports = function setUp(gulp) {
 
           _.each(sortedTasks, _.partial(makeSection, table));
 
-          output += makeHeader(category) + '\n';
-          output += table.print() + '\n';
+          tables[category] = table;
         });
 
-        return output;
+        if (tables.main) {
+          output += '\n' + makeHeader('main') + '\n' + tables.main.print() + '\n';
+        }
+
+        return _.reduce(tables, function(output, table, category) {
+          if (category !== 'main') {
+            output += makeHeader(category) + '\n' + table.print() + '\n';
+          }
+
+          return output;
+        }, output);
       }
   };
 }
