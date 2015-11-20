@@ -13,12 +13,16 @@ module.exports = function testIntegration(options, appURL) {
       jasmineInstance,
       seleniumServer;
 
-  function log(message, error) {
-    gutil.log(gutil.colors.magenta(PLUGIN_NAME), message);
+  function log() {
+    var messages = _.toArray(arguments);
+    messages.splice(0, 0, gutil.colors.magenta(PLUGIN_NAME));
+    gutil.log.apply(null, messages);
   }
 
-  function error(message) {
-    // return new gutil.PluginError(PLUGIN_NAME, message);
+  function error() {
+    var messages = _.toArray(arguments);
+    messages.splice(0, 0, PLUGIN_NAME);
+    return new gutil.PluginError.apply(null, messages);
   }
 
   options = _.defaultsDeep({}, options, {
@@ -139,7 +143,6 @@ module.exports = function testIntegration(options, appURL) {
               // Shut down the webdriver
               if (GLOBAL.browser) {
                 log('Shutting down Webdriver browser');
-                // GLOBAL.browser.end().then(_.ary(resolve, 0));
                 GLOBAL.browser.end().then(resolve);
               } else {
                 resolve();
