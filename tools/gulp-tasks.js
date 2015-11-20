@@ -299,8 +299,8 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
 
             tasks.push(buildTasks);
 
-            if (!!config.server) {
-              tasks.push('serve');
+            if (!!config.server && !!appServer) {
+              tasks.push('serve-load');
             }
 
             runSequence.apply(null, tasks);
@@ -329,8 +329,8 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
 
           tasks.push(buildTasks);
 
-          if (!!config.server) {
-            tasks.push('serve');
+          if (!!config.server && !!appServer) {
+            tasks.push('serve-load');
           }
 
           runSequence.apply(null, tasks);
