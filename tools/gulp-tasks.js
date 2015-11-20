@@ -484,8 +484,9 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
     gutil.log(gulpMetadata.describeAll());
   });
   gulpMetadata.addTask('help', {
-    description: 'List all available Gulp tasks and arguments',
-    category: 'misc'
+    description: 'List all available Gulp tasks and arguments.',
+    category: 'misc',
+    weight: 999
   });
 
   return gulp;
