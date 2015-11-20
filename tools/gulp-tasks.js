@@ -461,7 +461,25 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
   });
 
 
-  /*--- Help Task ---*/
+  /*--- Misc. Tasks ---*/
+
+  if (config.versioning) {
+    gulp.task('version', function() {
+      var versionBump = require('./version-bump.js');
+
+      return gulp.src(config.versioning.src, {base: '.'})
+        .pipe(versionBump(args.bump))
+        .pipe(gulp.dest('.'));
+    });
+    gulpMetadata.addTask('version', {
+      description: 'Bump this project\'s semantic version number.',
+      category: 'misc',
+      arguments: {
+          'bump': '[Optional] Specifies which part of the version number (major, minor, patch) should be bumped.'
+        }
+    });
+  }
+
   gulp.task('help', function() {
     gutil.log(gulpMetadata.describeAll());
   });

@@ -81,6 +81,7 @@
     "rimraf": "^2.4.3",
     "run-sequence": "^1.1.2",
     "selenium-standalone": "^4.6.0",
+    "semver": "^5.1.0",
     "stream-combiner": "^0.2.2",
     "stylelint": "^1.1.0",
     "stylelint-statement-max-nesting-depth": "^0.4.0",
