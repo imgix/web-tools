@@ -92,5 +92,15 @@
   },
   "scripts": {
     "test": "echo \"Error: run `gulp test` instead\" && exit 1"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-jscs": "^3.0.2",
+    "gulp-jshint": "^1.12.0",
+    "gulp-json-lint": "^0.1.0",
+    "gulp-util": "^3.0.7",
+    "lodash": "^3.10.1",
+    "reporter-plus": "git://github.com/jayeb/reporter-plus.git",
+    "yargs": "^3.30.0"
   }
 }
