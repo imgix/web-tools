@@ -34,9 +34,9 @@ module.exports = function testUnit(options) {
       },
     ngHtml2JsPreprocessor: {
         moduleName: 'override.me',
-        cacheIdFromPath: function(filePath) {
+        cacheIdFromPath: function (filePath) {
             return path.basename(filePath);
-          },
+          }
       }
   });
 
@@ -55,4 +55,4 @@ module.exports = function testUnit(options) {
         new KarmaServer(karmaOptions, _.ary(done, 0)).start();
       }
   );
-}
+};

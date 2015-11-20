@@ -74,14 +74,14 @@ module.exports = function buildCSS(options) {
         stylelint: {
             rules: require('../runcoms/rc.stylelint.json'),
             plugins: {
-                'statement-max-nesting-depth': require('stylelint-statement-max-nesting-depth'),
+                'statement-max-nesting-depth': require('stylelint-statement-max-nesting-depth')
               }
           },
         'postcss-import': {
             plugins: [
                 require('postcss-discard-comments')
               ],
-            transform: function(fileContents) {
+            transform: function (fileContents) {
                 // This allows us to use //-style comments in imported files, since
                 // PostCSS-import doesn't allow non-css syntaxes in its parser
                 return fileContents.replace(/\/\/\s(.*)\n/g, '/* $1 */\n');
@@ -113,6 +113,6 @@ module.exports = function buildCSS(options) {
       options.doBanner && gulpPlugins.header(options.banner),
       options.doVersioning && gulpPlugins.rev(),
       options.doMinify && gulpPlugins.rename(options.minifyRenameOptions),
-      options.doSourceMaps && gulpPlugins.sourcemaps.write(options.mapsDir),
+      options.doSourceMaps && gulpPlugins.sourcemaps.write(options.mapsDir)
   ]));
 };

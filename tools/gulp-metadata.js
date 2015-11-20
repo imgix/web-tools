@@ -9,7 +9,7 @@ module.exports = function setUp(gulp) {
       longestName = 0;
 
   return {
-    addTask: function(name, metadata) {
+    addTask: function (name, metadata) {
         metadata.name = name;
 
         if (name.length > longestName) {
@@ -18,7 +18,7 @@ module.exports = function setUp(gulp) {
 
         taskMetadata[name] = metadata;
       },
-    describeAll: function() {
+    describeAll: function () {
         var tables = {},
             output = '',
             groupedTasks;
@@ -44,11 +44,11 @@ module.exports = function setUp(gulp) {
           });
 
           _.each(task.notes, function makeNoteRow(note) {
-            var note = '  ' + logSymbols.warning + ' ' + note;
+            var noteLine = '  ' + logSymbols.warning + ' ' + note;
 
             table.newRow();
             table.cell(0, '');
-            table.cell(1, note, _.ary(chalk.yellow, 1));
+            table.cell(1, noteLine, _.ary(chalk.yellow, 1));
           });
 
           table.newRow();
@@ -64,7 +64,7 @@ module.exports = function setUp(gulp) {
         groupedTasks = _.groupBy(taskMetadata, 'category');
 
         // In each cagtegory, sort by weight
-        _.each(groupedTasks, function(tasks, category) {
+        _.each(groupedTasks, function categoryLoop(tasks, category) {
           var sortedTasks,
               table = new Table();
 
@@ -85,7 +85,7 @@ module.exports = function setUp(gulp) {
           output += '\n' + makeHeader('main') + '\n' + tables.main.print() + '\n';
         }
 
-        return _.reduce(tables, function(output, table, category) {
+        return _.reduce(tables, function makeOutput(output, table, category) {
           if (category !== 'main') {
             output += makeHeader(category) + '\n' + table.print() + '\n';
           }
@@ -94,4 +94,4 @@ module.exports = function setUp(gulp) {
         }, output);
       }
   };
-}
+};

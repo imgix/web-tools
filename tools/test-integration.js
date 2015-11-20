@@ -68,19 +68,19 @@ module.exports = function testIntegration(options, appURL) {
         transformCallback();
       },
     function flush(flushCallback) {
-        var stream = this;
+        var th = this;
 
         // Start the server to drive the browser
         Q.promise(function startSeleniumServer(resolve, reject) {
             log('Starting Selenium');
-            Selenium.install(function(err) {
+            Selenium.install(function seleniumInstallCallback(err) {
               if (err) {
                 error(err);
                 reject(err);
               } else {
                 Selenium.start({
                   seleniumArgs: options.seleniumOptions
-                }, function seleniumCallback(err, child) {
+                }, function seleniumStartCallback(err, child) {
                   if (err) {
                     error(err);
                     reject(err);
@@ -119,7 +119,7 @@ module.exports = function testIntegration(options, appURL) {
 
             log('Executing Jasmine tests');
 
-            jasmineInstance.onComplete(function(didPass) {
+            jasmineInstance.onComplete(function jasmineCompleteCallback(didPass) {
               if (didPass) {
                 dfd.resolve();
               } else {
@@ -135,7 +135,7 @@ module.exports = function testIntegration(options, appURL) {
         // Catch errors
         .catch(function onError(err) {
             error(err);
-            stream.emit('error', err);
+            th.emit('error', err);
           })
 
         .finally(function cleanUp() {

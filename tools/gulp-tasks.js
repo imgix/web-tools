@@ -27,7 +27,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
   config = configFactory(runningTask, args);
 
   // Set global vars at outset
-  hasAppAssets = !_.isEmpty(config.appAssets),
+  hasAppAssets = !_.isEmpty(config.appAssets);
   hasExtAssets = !_.isEmpty(config.extAssets);
 
   // We can't set up these dependencies without Gulp being defined first
@@ -51,17 +51,16 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
         hostname = serverConfig.hostname,
         port = serverConfig.port ? (':' + serverConfig.port) : '';
 
-      return protocol + '://' + hostname + port;
+    return protocol + '://' + hostname + port;
   }, JSON.stringify);
 
   // This prevents node from throwing a warning about memory leaks: http://stackoverflow.com/questions/9768444
   process.setMaxListeners(0);
 
-
   /*--- Build Tasks ---*/
   if (hasAppAssets || hasExtAssets) {
     // Main build task:
-    gulp.task('build', function(done) {
+    gulp.task('build', function buildTask(done) {
       var buildTasks = _.compact([
         !_.isEmpty(config.appAssets) && 'build-app',
         !_.isEmpty(config.extAssets) && 'build-ext'
@@ -80,7 +79,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
     });
 
     // Task to clean destination
-    gulp.task('build-clean', function() {
+    gulp.task('build-clean', function buildCleanTask() {
       return gulp.src(config.destPath, {read: false})
         .pipe(gulpPlugins.clean());
     });
@@ -91,7 +90,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
 
     if (hasAppAssets) {
       // Main app-asset build task:
-      gulp.task('build-app', function(done) {
+      gulp.task('build-app', function buildAppTask(done) {
         var tasks = _.map(config.appAssets, function prefix(assetOptions, assetType) {
           return 'build-app-' + assetType;
         });
@@ -150,7 +149,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
 
     if (hasExtAssets) {
       // Main external-asset build task:
-      gulp.task('build-ext', function(done) {
+      gulp.task('build-ext', function buildExtTask(done) {
         var tasks = _.map(config.extAssets, function prefix(assetOptions, assetType) {
           return 'build-ext-' + assetType;
         });
@@ -185,11 +184,10 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
     }
   }
 
-
   /*--- Serve Tasks ---*/
   if (!!config.server) {
     // Main serve task:
-    gulp.task('serve', function(done) {
+    gulp.task('serve', function serveTask(done) {
       runSequence(
         'serve-start',
         'serve-load',
@@ -203,7 +201,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
       weight: 2
     });
 
-    gulp.task('serve-start', function(done) {
+    gulp.task('serve-start', function serveStartTask(done) {
       var express = require('express'),
           app;
 
@@ -217,7 +215,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
       app.use(express.static(config.destPath));
 
       if (config.appAssets.html) {
-        app.get('*', function(request, response) {
+        app.get('*', function respond(request, response) {
           response.sendFile('index.html', {
             root: config.appAssets.html.dest
           });
@@ -243,7 +241,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
       category: 'serve'
     });
 
-    gulp.task('serve-stop', function() {
+    gulp.task('serve-stop', function serveStopTask() {
       if (appServer) {
         appServer.close();
         appServer = undefined;
@@ -254,7 +252,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
       category: 'serve'
     });
 
-    gulp.task('serve-load', function() {
+    gulp.task('serve-load', function serveLoadTask() {
       require('./chrome-load.js')(getServerURL(config.server));
     });
     gulpMetadata.addTask('serve-load', {
@@ -263,11 +261,10 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
     });
   }
 
-
   /*--- Watch Tasks ---*/
   if (hasAppAssets || hasExtAssets) {
     // Main watch task:
-    gulp.task('watch', function(done) {
+    gulp.task('watch', function watchTask(done) {
       var watchTasks = _.compact([
         hasAppAssets && 'watch-app',
         hasExtAssets && 'watch-ext'
@@ -283,7 +280,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
     });
 
     if (hasAppAssets) {
-      gulp.task('watch-app', function() {
+      gulp.task('watch-app', function watchAppTask() {
         // Set up a watcher for each app asset type
         _.each(config.appAssets, function addAppWatcher(assetOptions, assetType) {
           gulp.watch(assetOptions.src, function onChange() {
@@ -315,7 +312,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
     }
 
     if (hasExtAssets) {
-      gulp.task('watch-ext', function() {
+      gulp.task('watch-ext', function watchExtTask() {
         gulp.watch(config.bower.components, function onChange() {
           var tasks = [],
               buildTasks = ['build-ext'];
@@ -344,11 +341,10 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
     }
   }
 
-
   /*--- Test Tasks ---*/
   if (!!config.unitTests || !!config.integrationTests) {
     // Main test task:
-    gulp.task('test', function(done) {
+    gulp.task('test', function testTask(done) {
       var testTasks = _.compact([
         !!config.unitTests && 'test-unit',
         !!config.integrationTests && 'test-integration'
@@ -366,7 +362,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
     });
 
     if (!!config.unitTests) {
-      gulp.task('test-unit', function() {
+      gulp.task('test-unit', function testUnitTask() {
         var argFilterPipeline = require('./arg-filter.js'),
             testUnitPipeline = require('./test-unit.js'),
             bowerStream,
@@ -406,7 +402,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
     }
 
     if (!!config.integrationTests) {
-      gulp.task('test-integration', function(done) {
+      gulp.task('test-integration', function testIntegrationTask(done) {
         runSequence(
           'build',
           'serve-start',
@@ -424,14 +420,14 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
           }
       });
 
-      gulp.task('test-integration-run', function() {
+      gulp.task('test-integration-run', function testIntegrationRunTask() {
         var argFilterPipeline = require('./arg-filter.js'),
             testIntegrationPipeline = require('./test-integration.js');
 
         // Set up stream, with filtration
         return gulp.src(config.integrationTests.src, {read: false})
           .pipe(argFilterPipeline(args))
-          .pipe(testIntegrationPipeline(config.integrationTests, getServerURL(config.server)))
+          .pipe(testIntegrationPipeline(config.integrationTests, getServerURL(config.server)));
       });
       gulpMetadata.addTask('test-integration-run', {
         description: 'Initialize and run integration tests (including visual regression tests) with Selenium and Webdriver.',
@@ -443,9 +439,8 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
     }
   }
 
-
   /*--- Default Task ---*/
-  gulp.task('default', function(done) {
+  gulp.task('default', function defaultTask(done) {
     var mainTasks = _.compact([
       !!gulp.tasks.build && 'build',
       !!gulp.tasks.serve && 'serve',
@@ -460,11 +455,10 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
     weight: 0
   });
 
-
   /*--- Misc. Tasks ---*/
 
   if (config.versioning) {
-    gulp.task('version', function() {
+    gulp.task('version', function versionTask() {
       var versionBump = require('./version-bump.js');
 
       return gulp.src(config.versioning.src, {base: '.'})
@@ -480,7 +474,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
     });
   }
 
-  gulp.task('help', function() {
+  gulp.task('help', function helpTask() {
     gutil.log(gulpMetadata.describeAll());
   });
   gulpMetadata.addTask('help', {

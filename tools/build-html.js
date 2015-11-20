@@ -9,7 +9,7 @@ module.exports = function buildHTML(options, injectableStreams) {
   var gulpPlugins = loadGulpPlugins();
 
   function injectAll(injectableStreams) {
-    return combine(_(injectableStreams).map(function (stream, name) {
+    return combine(_(injectableStreams).map(function streamLoop(stream, name) {
       if (stream) {
         return gulpPlugins.inject(stream, _.merge(
           {name: 'inject:' + name},

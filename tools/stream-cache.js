@@ -2,7 +2,7 @@ var _ = require('lodash'),
     through = require('through2'),
     vinylFS = require('vinyl-fs');
 
-module.exports = (function() {
+module.exports = (function constructor() {
   var streamCache = {};
 
   return {
@@ -10,7 +10,7 @@ module.exports = (function() {
         return streamCache[id];
       },
     put: function (id) {
-        var files = []
+        var files = [];
 
         return through.obj(
           function transform(chunk, encoding, callback) {

@@ -33,7 +33,7 @@ module.exports = function buildTemplates(options) {
     ngHtml2JsOptions: {
         declareModule: false,
         moduleName: 'override.me',
-        rename: function(templateURL) {
+        rename: function (templateURL) {
             return path.parse(templateURL).base;
           }
       },
@@ -62,6 +62,6 @@ module.exports = function buildTemplates(options) {
     options.doConcat && gulpPlugins.concat(options.concatName),
     options.doBanner && gulpPlugins.header(options.banner),
     options.doVersioning && gulpPlugins.rev(),
-    options.doMinify && gulpPlugins.rename(options.minifyRenameOptions),
+    options.doMinify && gulpPlugins.rename(options.minifyRenameOptions)
   ]));
 };

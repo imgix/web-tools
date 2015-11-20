@@ -7,7 +7,7 @@ var _ = require('lodash'),
     gm = require('gm'),
     resemble = require('node-resemble-js');
 
-module.exports = (function() {
+module.exports = (function constructor() {
   var defaultOptions = {
     screenshotRoot: './',
     baselineSubdir: 'screens-baseline',
@@ -43,12 +43,12 @@ module.exports = (function() {
               documentHeight: html.scrollHeight,
               devicePixelRatio: window.devicePixelRatio
             };
-          }).then(function(result) {
+          }).then(function resolveWithValue(result) {
             dfd.resolve(result.value);
           });
 
           return dfd.promise;
-        };
+        }
 
         function measureElementInBrowser(selector) {
           var dfd = Q.defer();
@@ -66,12 +66,12 @@ module.exports = (function() {
               width: rect.width,
               height: rect.height
             };
-          }, selector).then(function(result) {
+          }, selector).then(function resolveWithValue(result) {
             dfd.resolve(result.value);
           });
 
           return dfd.promise;
-        };
+        }
 
         function setBrowserWidth(width) {
           return measureBrowser().then(function setWidth(dimensions) {
@@ -84,19 +84,19 @@ module.exports = (function() {
 
             return dfd.promise;
           });
-        };
+        }
 
         function getBrowserScrollTop() {
           var dfd = Q.defer();
 
           browser.execute(function getWindowScrollTopInBrowser() {
             return window.pageYOffset;
-          }).then(function(result) {
+          }).then(function resolveWithValue(result) {
             dfd.resolve(result.value);
           });
 
           return dfd.promise;
-        };
+        }
 
         function setBrowserScrollTop(y) {
           var dfd = Q.defer();
@@ -105,22 +105,22 @@ module.exports = (function() {
             window.scrollTo(0, y);
 
             return window.pageYOffset;
-          }, y).then(function(result) {
+          }, y).then(function resolveWithValue(result) {
             dfd.resolve(result.value);
           });
 
           return dfd.promise;
-        };
+        }
 
         // Viewport capture functions
         function saveAreaScreenshotsForAllWidths(widths, areas, destination, fileNamePattern) {
           var viewportObjects = [];
 
-          return _.reduce(widths, function(runningPromise, width) {
+          return _.reduce(widths, function makePromise(runningPromise, width) {
             return runningPromise
               .then(_.partial(getViewportDataForWidth, width, areas))
               .then(viewportObjects.push.bind(viewportObjects));
-          }, Q())
+          }, new Q())
 
             .then(function saveAreaScreenshots() {
                 return Q.all(_.map(viewportObjects, function loopOverViewportObjects(viewportObject) {
@@ -131,7 +131,7 @@ module.exports = (function() {
                         fullPath = path.join(destination, fileName);
 
                     return Q.nbind(area.screenshot.write, area.screenshot)(fullPath)
-                      .then(function() {
+                      .then(function getObject() {
                           return {
                             name: area.name,
                             selector: area.selector,
@@ -146,39 +146,39 @@ module.exports = (function() {
             .then(_.flatten)
 
             .catch(_.partial(rm, destination));
-        };
+        }
 
         function getViewportDataForWidth(width, areas) {
-            var viewportObject = {
-              width: width
-            };
+          var viewportObject = {
+            width: width
+          };
 
-            function cacheOnViewportObject(key, value) {
-              viewportObject[key] = value;
+          function cacheOnViewportObject(key, value) {
+            viewportObject[key] = value;
 
-              return viewportObject;
-            }
+            return viewportObject;
+          }
 
-            return setBrowserWidth(width)
+          return setBrowserWidth(width)
 
-              // Get the browser dimensions
-              .then(measureBrowser)
+            // Get the browser dimensions
+            .then(measureBrowser)
 
-              // Cache the browser dimensions on the viewport object
-              .then(_.partial(cacheOnViewportObject, 'dimensions'))
+            // Cache the browser dimensions on the viewport object
+            .then(_.partial(cacheOnViewportObject, 'dimensions'))
 
-              // Capture a full screenshot of the viewport
-              .then(_.partial(screenshotFullViewport, viewportObject))
+            // Capture a full screenshot of the viewport
+            .then(_.partial(screenshotFullViewport, viewportObject))
 
-              // Cache the resultant screenshot image on the viewport object
-              .then(_.partial(cacheOnViewportObject, 'screenshot'))
+            // Cache the resultant screenshot image on the viewport object
+            .then(_.partial(cacheOnViewportObject, 'screenshot'))
 
-              // Crop the screenshot for each area
-              .then(_.partial(screenshotAllAreasInViewport, areas, viewportObject))
+            // Crop the screenshot for each area
+            .then(_.partial(screenshotAllAreasInViewport, areas, viewportObject))
 
-              // Cache the resultant array of area objects on the viewport object
-              .then(_.partial(cacheOnViewportObject, 'areas', _));
-        };
+            // Cache the resultant array of area objects on the viewport object
+            .then(_.partial(cacheOnViewportObject, 'areas', _));
+        }
 
         function screenshotFullViewport(viewportObject) {
           var fileName = _.uniqueId('screenshot-') + '-' + viewportObject.width + '.png',
@@ -190,10 +190,10 @@ module.exports = (function() {
 
                 return Q.nbind(image.write, image)(fullPath);
               })
-            .then(function () {
+            .then(function getFullPath() {
                 return fullPath;
               });
-        };
+        }
 
         function screenshotAllAreasInViewport(areas, viewportObject) {
           function screenshotAreaInViewport(area, viewportObject) {
@@ -223,13 +223,13 @@ module.exports = (function() {
 
               // Cache the resultant screenshot image on the area object
               .then(_.partial(cacheOnAreaObject, 'screenshot'));
-          };
+          }
 
-          return Q.all(_.map(areas, _.partial(screenshotAreaInViewport, _, viewportObject)))
-        };
+          return Q.all(_.map(areas, _.partial(screenshotAreaInViewport, _, viewportObject)));
+        }
 
         function compareToPriorScreenshots(areas, mismatchTolerance, baselineDir, diffsDir) {
-          return Q.all(_.map(areas, function(areaObject) {
+          return Q.all(_.map(areas, function compareAreaToPriorArea(areaObject) {
             var dfd = Q.defer(),
                 fileName = path.basename(areaObject.screenshot),
                 baselineFile = path.join(baselineDir, fileName),
@@ -267,7 +267,7 @@ module.exports = (function() {
                     });
                   } else {
                     // If it doesn't match the baseline, save the file and make a new diff file
-                    data.getDiffImage().pack().on('end', function(err) {
+                    data.getDiffImage().pack().on('end', function onEnd(err) {
                       if (err) {
                         dfd.reject(err);
                       } else {
@@ -276,15 +276,15 @@ module.exports = (function() {
                       }
                     }).pipe(fs.createWriteStream(diffFile));
                   }
-                })
+                });
               }
-            })
+            });
 
             return dfd.promise.then(function exportResults() {
               return areaObject;
             });
           }));
-        };
+        }
 
         // Set up options
         options = _.defaults(options || {}, defaultOptions);
@@ -292,7 +292,7 @@ module.exports = (function() {
         // The Temporary directory name is based on the current time
         tempDir = path.join(options.screenshotRoot, '.temp-' + now);
 
-        browser.checkRendering = function(groupID, areas, widths) {
+        browser.checkRendering = function (groupID, areas, widths) {
           var baselineDir = path.join(
                   options.screenshotRoot,
                   groupID,
@@ -368,7 +368,7 @@ module.exports = (function() {
                 return output;
               })
 
-            .catch(function(e) {
+            .catch(function onError(e) {
                 console.error(e);
                 console.trace();
               });
@@ -394,9 +394,9 @@ module.exports = (function() {
           });
 
           return promise;
-        }
+        };
 
         return browser;
       }
-  }
+  };
 })();
