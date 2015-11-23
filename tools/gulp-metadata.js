@@ -70,9 +70,9 @@ module.exports = function setUp(gulp) {
 
           sortedTasks = _.sortBy(tasks, function sortTask(task) {
             if (_.isNumber(task.weight)) {
-              return task.weight;
+              return task.weight * -1;
             } else {
-              return 9999;
+              return -9999;
             }
           });
 
