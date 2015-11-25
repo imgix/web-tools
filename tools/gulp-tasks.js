@@ -132,7 +132,6 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
           }
 
           pipeline = combine(_.compact([
-            assetOptions.dest && gulpPlugins.flatten(),
             assetOptions.build && !!builders[assetType] && builders[assetType](assetOptions.buildOptions, assetDependencyStreams),
             assetOptions.dest && gulp.dest(assetOptions.dest),
             streamCache.put('app-' + assetType)
