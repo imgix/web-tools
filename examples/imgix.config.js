@@ -24,7 +24,7 @@ module.exports = function(task, args) {
   } else if (args.env && _.includes(allEnvs, args.env)) {
     env = args.test;
   } else {
-    env = 'test';
+    env = 'dev';
   }
 
   isProd = (env === 'prod');
