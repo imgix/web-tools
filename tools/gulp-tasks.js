@@ -312,7 +312,8 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
 
     if (hasExtAssets) {
       gulp.task('watch-ext', function watchExtTask() {
-        gulp.watch(config.bower.components, function onChange() {
+        // Pass follow:true here to ensure symlinks are followed (for `bower link`ed components)
+        gulp.watch(getExternalFiles(), {follow: true}, function onChange() {
           var tasks = [],
               buildTasks = ['build-ext'];
 
