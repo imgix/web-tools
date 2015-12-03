@@ -188,7 +188,11 @@ module.exports = function(task, args) {
             filter: path.join('**', '*.html')
           },
         fonts: {
-            filter: path.join('**', 'fonts', '*'),
+            filter: [
+                '*.woff2',
+                '*.woff',
+                '*.ttf'
+              ],
             dest: path.join(appDestBase, 'fonts')
           }
       },
