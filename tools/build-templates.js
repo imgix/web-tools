@@ -27,8 +27,7 @@ module.exports = function buildTemplates(options) {
         removeComments: true,
         collapseWhitespace: true,
         conservativeCollapse: true,
-        collapseBooleanAttributes: true,
-        removeRedundantAttributes: true
+        collapseBooleanAttributes: true
       },
     ngHtml2JsOptions: {
         declareModule: false,

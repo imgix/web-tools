@@ -60,8 +60,7 @@ module.exports = function buildHTML(options, injectableStreams) {
         removeComments: true,
         collapseWhitespace: true,
         conservativeCollapse: true,
-        collapseBooleanAttributes: true,
-        removeRedundantAttributes: true
+        collapseBooleanAttributes: true
       }
   });
 
