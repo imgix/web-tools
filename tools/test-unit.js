@@ -1,6 +1,7 @@
 var path = require('path'),
     _ = require('lodash'),
     through = require('through2'),
+    gutil = require('gulp-util'),
     KarmaServer = require('karma').Server;
 
 module.exports = function testUnit(options) {
@@ -47,12 +48,21 @@ module.exports = function testUnit(options) {
         callback();
       },
     function flush(done) {
-        var karmaOptions = _.merge({}, options, {
-          files: karmaFiles
-        });
+        var th = this, // 'this' refers to the stream itself
+            karmaOptions = _.merge({}, options, {
+                files: karmaFiles
+              });
 
-        // Use _.ary here so we don't pass any args to the callback
-        new KarmaServer(karmaOptions, _.ary(done, 0)).start();
+        new KarmaServer(karmaOptions, function onFinish(exitCode) {
+          if (exitCode !== 0) {
+            th.emit('error', new gutil.PluginError('test-unit', {
+              message: 'Unit tests failed.',
+              showStack: false
+            }));
+          }
+
+          done();
+        }).start();
       }
   );
 };
