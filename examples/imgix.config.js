@@ -169,7 +169,11 @@ module.exports = function(task, args) {
             build: true,
             buildOptions: {
                 doCheck: false,
+                doMinify: isProd,
+                doConcat: isProd,
                 doBanner: false,
+                doVersioning: isProd,
+                doSourcemaps: isProd,
                 concatName: 'libs.js'
               },
             dest: path.join(appDestBase, 'scripts', 'libs')
@@ -178,7 +182,11 @@ module.exports = function(task, args) {
             build: true,
             buildOptions: {
                 doCheck: false,
+                doMinify: isProd,
+                doConcat: isProd,
                 doBanner: false,
+                doVersioning: isProd,
+                doSourcemaps: isProd,
                 concatName: 'libs.css'
               },
             dest: path.join(appDestBase, 'styles', 'libs')
