@@ -2,4 +2,4 @@
 
 set -xeo pipefail
 
-circusctl restart admin-webapp
+circusctl restart imgix-app
