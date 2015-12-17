@@ -25,13 +25,13 @@ module.exports = function buildHTML(options, injectableStreams) {
 
     // For SVG files, return the whole file minus xml and doctype declarations
     if (ext === '.svg') {
-      $ = cheerio.load(file._contents.toString());
-      // Do some buffoonery with append here because cheerio can't do .prop('outerHTML')
-      return $('<div/>').append($('svg').addClass('refs')).html();
+      $ = cheerio.load(file.contents.toString());
+      $('svg').addClass('refs');
+      return $.xml();
 
     // For HTML partials, return the whole darn thing
     } else if (ext === '.html') {
-      return file._contents.toString();
+      return file.contents.toString();
 
     // Use the default transform as fallback
     } else {
