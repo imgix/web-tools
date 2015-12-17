@@ -1,8 +1,10 @@
 var _ = require('lodash'),
     path = require('path'),
     fs = require('fs'),
+    exec = require('child_process').exec,
     merge = require('merge2'),
     combine = require('stream-combiner'),
+    Q = require('q'),
     args = require('yargs').argv,
     mainBowerFiles = require('main-bower-files'),
     gutil = require('gulp-util'),
@@ -437,6 +439,58 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
           }
       });
     }
+  }
+
+  /*--- Deploy Task ---*/
+  if (!!config.deployment) {
+    gulp.task('deploy', function deployTask() {
+      var snippets = {
+              ssh: _.template('ssh <%= jumpServer %>'),
+              gitReference: _.template('git ls-remote <%= repository.url %> <%= repository.branch %> | cut -f 1'),
+              lokoPublish: _.template('loko -D publish --release <%= loko.package %>'),
+              mdbFind: _.template('mdb inter <%= mdb.tag %> state=live'),
+              lokoPush: _.template('loko -D push -m - <%= loko.package %>')
+            },
+          compiledSnippets,
+          publishCommand,
+          pushCommand;
+
+      function runCommand(command) {
+        var child,
+            dfd = Q.defer();
+
+        child = exec(command, function (error, stdout, stderr) {
+          if (error) {
+            error.stdout = stdout;
+            error.stderr = stderr;
+            error.message = 'Error running command: `' + command + '`.';
+
+            dfd.reject(error);
+          } else {
+            dfd.resolve();
+          }
+        });
+
+        child.stdout.pipe(process.stdout);
+        child.stderr.pipe(process.stderr);
+
+        return dfd.promise;
+      }
+
+      compiledSnippets = _.mapValues(snippets, function compileTemplate(template) {
+        return template(config.deployment);
+      });
+
+      publishCommand = _.template('<%= ssh %> "<%= lokoPublish %> `<%= gitReference %>`"')(compiledSnippets);
+      pushCommand = _.template('<%= ssh %> "<%= mdbFind %> | <%= lokoPush %>"')(compiledSnippets);
+
+      return runCommand(publishCommand)
+        .then(_.partial(runCommand, pushCommand));
+    });
+    gulpMetadata.addTask('deploy', {
+      description: 'Publish and push a deployment on a remote server using Loko.',
+      category: 'deploy'
+    });
   }
 
   /*--- Default Task ---*/
