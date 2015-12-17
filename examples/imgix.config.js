@@ -232,6 +232,24 @@ module.exports = function(task, args) {
             screenshotRoot: appTestBase,
             widths: [320, 480, 640, 768, 1024]
           }
+      },
+
+    deployment: {
+        jumpServer: 'server.ex.imgix.com',
+        loko: {
+            package: 'imgix-app-deploy',
+            configFile: path.join(appBase, 'loko.cfg'),
+            hooks: [
+                path.join(appBase, 'dev', 'loko', '*.sh')
+              ]
+          },
+        repository: {
+            url: 'git@github.com:zebrafishlabs/imgix-app',
+            branch: 'master'
+          },
+        mdb: {
+            tag: 'imgix-app'
+          }
       }
   };
 }
