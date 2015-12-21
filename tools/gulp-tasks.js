@@ -495,7 +495,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
     gulp.task('rollback', function deployTask() {
       var snippets = {
               ssh: _.template('ssh <%= jumpServer %>'),
-              lokoRollback: _.templatE('loko -D rollback -r1 <%= loko.package %>'),
+              lokoRollback: _.template('loko -D rollback -r1 <%= loko.package %>'),
               mdbIntersect: _.template('mdb inter <%= mdb.tag %> state=live'),
               lokoPush: _.template('loko -D push -m - <%= loko.package %>')
             },
