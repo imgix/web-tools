@@ -251,6 +251,9 @@ module.exports = function(task, args) {
                 path.join(appBase, 'dev', 'loko', '*.sh')
               ]
           },
+        ansible: {
+            config: 'this_app.yaml'
+          },
         repository: {
             url: 'git@github.com:zebrafishlabs/imgix-app',
             branch: 'master'
