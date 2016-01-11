@@ -444,16 +444,9 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
   /*--- Deploy Task ---*/
   if (!!config.deployment) {
     gulp.task('deploy', function deployTask() {
-      var snippets = {
-              ssh: _.template('ssh <%= jumpServer %>'),
-              gitReference: _.template('git ls-remote <%= repository.url %> <%= repository.branch %> | cut -f 1'),
-              lokoPublish: _.template('loko -D publish --release <%= loko.package %>'),
-              mdbIntersect: _.template('mdb inter <%= mdb.tag %> state=live'),
-              lokoPush: _.template('loko -D push -m - <%= loko.package %>')
-            },
-          compiledSnippets,
-          publishCommand,
-          pushCommand;
+      var prefix = args.prefix || 'prod',
+          lines,
+          compiledCommand;
 
       function runCommand(command) {
         var child,
@@ -477,67 +470,31 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
         return dfd.promise;
       }
 
-      compiledSnippets = _.mapValues(snippets, function compileTemplate(template) {
-        return template(config.deployment);
-      });
+      lines = [
+        // Get version for loko and ansible
+        'VERSION=`git ls-remote <%= repository.url %> <%= repository.branch %> | cut -f 1`',
 
-      publishCommand = _.template('<%= ssh %> "<%= lokoPublish %> `<%= gitReference %>`"')(compiledSnippets);
-      pushCommand = _.template('<%= ssh %> "<%= mdbIntersect %> | <%= lokoPush %>"')(compiledSnippets);
+        // Publish loko package
+        'loko -D publish <%= loko.package %> \\$VERSION',
 
-      return runCommand(publishCommand)
-        .then(_.partial(runCommand, pushCommand));
+        // Move to ansible-repo directory
+        'cd /repos/ansible-repo',
+
+        // Run ansible playbook
+        'ansible-playbook -e loko_version=\\$VERSION -e prefix=' + prefix + ' <%= ansible.config %>'
+      ];
+
+      // ssh [server] "[line1] && [line2] && ..."
+      compiledCommand = _.template('ssh <%= jumpServer %> "' + lines.join(' && ') + '"')(config.deployment);
+
+      return runCommand(compiledCommand);
     });
     gulpMetadata.addTask('deploy', {
-      description: 'Publish and push a deployment on a remote server using Loko.',
-      category: 'deploy'
-    });
-
-    gulp.task('rollback', function deployTask() {
-      var snippets = {
-              ssh: _.template('ssh <%= jumpServer %>'),
-              lokoRollback: _.template('loko -D rollback -r1 <%= loko.package %>'),
-              mdbIntersect: _.template('mdb inter <%= mdb.tag %> state=live'),
-              lokoPush: _.template('loko -D push -m - <%= loko.package %>')
-            },
-          compiledSnippets,
-          rollbackCommand,
-          pushCommand;
-
-      function runCommand(command) {
-        var child,
-            dfd = Q.defer();
-
-        child = exec(command, function (error, stdout, stderr) {
-          if (error) {
-            error.stdout = stdout;
-            error.stderr = stderr;
-            error.message = 'Error running command: `' + command + '`.';
-
-            dfd.reject(error);
-          } else {
-            dfd.resolve();
-          }
-        });
-
-        child.stdout.pipe(process.stdout);
-        child.stderr.pipe(process.stderr);
-
-        return dfd.promise;
-      }
-
-      compiledSnippets = _.mapValues(snippets, function compileTemplate(template) {
-        return template(config.deployment);
-      });
-
-      rollbackCommand = _.template('<%= ssh %> "<%= lokoRollback %>"')(compiledSnippets);
-      pushCommand = _.template('<%= ssh %> "<%= mdbIntersect %> | <%= lokoPush %>"')(compiledSnippets);
-
-      return runCommand(rollbackCommand)
-        .then(_.partial(runCommand, pushCommand));
-    });
-    gulpMetadata.addTask('rollback', {
-      description: 'Revert the latest deployment on a remote server using Loko.',
-      category: 'deploy'
+      description: 'Publish, configure and deploy code on remote servers using Loko and Ansible.',
+      category: 'deploy',
+      arguments: {
+          'prefix' : '[Optional] Use a prefix to target specific groups of machines for this deploy.'
+        }
     });
   }
 
