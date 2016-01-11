@@ -8,7 +8,7 @@ var _ = require('lodash'),
 module.exports = function buildJS(options) {
   var gulpPlugins = loadGulpPlugins();
 
-  options = _.defaults({}, options, {
+  options = _.defaultsDeep({}, options, {
     doCheck: true,
     doMinify: false,
     doConcat: false,
@@ -20,6 +20,7 @@ module.exports = function buildJS(options) {
     banner: '/* Built: ' + Date.now() + ' */\n',
     mapsDir: '.maps',
 
+    uglifyOptions: {},
     minifyRenameOptions: {
         extname: '.min.js'
       }
@@ -39,7 +40,7 @@ module.exports = function buildJS(options) {
 
     // Productionization pipeline
     options.doSourceMaps && gulpPlugins.sourcemaps.init(),
-    options.doMinify && gulpPlugins.uglify(),
+    options.doMinify && gulpPlugins.uglify(options.uglifyOptions),
     options.doConcat && gulpPlugins.concat(options.concatName),
     options.doBanner && gulpPlugins.header(options.banner),
     options.doVersioning && gulpPlugins.rev(),
