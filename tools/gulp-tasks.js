@@ -472,7 +472,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
         'ansible-playbook -e loko_version=\\$VERSION -e prefix=<%= args.staging ? "stage" : "prod" %> <%= ansible.configFile %>'
       ];
 
-      // ssh [server] "[line1] && [line2] && ..."
+      // Looks like this: ssh [server] "[line1] && [line2] && ..."
       compiledCommand = _.template('ssh <%= jumpServer %> "' + lines.join(' && ') + '"')(templateData);
 
       return runCommand(compiledCommand);
@@ -514,7 +514,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
         'loko -D rollback -r<%= args.rel || "1" %> <%= loko.package %>'
       ];
 
-      // ssh [server] "[line1] && [line2] && ..."
+      // Looks like this: ssh [server] "[line1] && [line2] && ..."
       compiledCommand = _.template('ssh <%= jumpServer %> "' + lines.join(' && ') + '"')(templateData);
 
       return runCommand(compiledCommand);
