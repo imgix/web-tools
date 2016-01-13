@@ -1,15 +1,14 @@
 var _ = require('lodash'),
     path = require('path'),
     fs = require('fs'),
-    exec = require('child_process').exec,
     merge = require('merge2'),
     combine = require('stream-combiner'),
-    Q = require('q'),
     args = require('yargs').argv,
     mainBowerFiles = require('main-bower-files'),
     gutil = require('gulp-util'),
     builders = require('./builders.js'),
-    streamCache = require('./stream-cache.js');
+    streamCache = require('./stream-cache.js'),
+    runCommand = require('./run-command.js');
 
 module.exports = function setupGulpTasks(gulp, configFactory) {
   var runningTask,
@@ -448,27 +447,6 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
           lines,
           compiledCommand;
 
-      function runCommand(command) {
-        var child,
-            dfd = Q.defer();
-
-        child = exec(command, function (error, stdout, stderr) {
-          if (error) {
-            error.stdout = stdout;
-            error.stderr = stderr;
-            error.message = 'Error running command: `' + command + '`.';
-
-            dfd.reject(error);
-          } else {
-            dfd.resolve();
-          }
-        });
-
-        child.stdout.pipe(process.stdout);
-        child.stderr.pipe(process.stderr);
-
-        return dfd.promise;
-      }
 
       lines = [
         // Get version for loko and ansible
