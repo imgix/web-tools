@@ -443,15 +443,32 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
   /*--- Deploy Task ---*/
   if (!!config.deployment) {
     gulp.task('deploy', function deployTask() {
-      var prefix = args.prefix || 'prod',
-          lines,
+      var lines = [],
+          templateData,
           compiledCommand;
 
+      // Merge command-line args into config settings
+      templateData = _.merge({
+        args: _.pick(args, [
+            'prefix',
+            'branch',
+            'commit'
+          ])
+      }, config.deployment);
 
-      lines = [
-        // Get version for loko and ansible
-        'VERSION=`git ls-remote <%= repository.url %> <%= repository.branch %> | cut -f 1`',
+      // --staging is a shortcut for --prefix=stage
+      if (args.staging && !args.prefix) {
+        templateData.args.prefix = 'stage';
+      }
 
+      // Get version for loko and ansible
+      if (args.commit) {
+        lines.push('VERSION=<%= args.commit %>');
+      } else {
+        lines.push('VERSION=`git ls-remote <%= repository.url %> <%= args.branch || repository.branch || "master" %> | cut -f 1`');
+      }
+
+      lines.push(
         // Publish loko package
         'loko -D publish <%= loko.package %> \\$VERSION',
 
@@ -459,11 +476,11 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
         'cd /repos/ansible-repo',
 
         // Run ansible playbook
-        'ansible-playbook -e loko_version=\\$VERSION -e prefix=' + prefix + ' <%= ansible.config %>'
-      ];
+        'ansible-playbook -e loko_version=\\$VERSION -e prefix=<%= args.prefix || "prod" %> <%= ansible.config %>'
+      );
 
       // ssh [server] "[line1] && [line2] && ..."
-      compiledCommand = _.template('ssh <%= jumpServer %> "' + lines.join(' && ') + '"')(config.deployment);
+      compiledCommand = _.template('ssh <%= jumpServer %> "' + lines.join(' && ') + '"')(templateData);
 
       return runCommand(compiledCommand);
     });
@@ -471,7 +488,10 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
       description: 'Publish, configure and deploy code on remote servers using Loko and Ansible.',
       category: 'deploy',
       arguments: {
-          'prefix' : '[Optional] Use a prefix to target specific groups of machines for this deploy.'
+          'staging': '[Optional] Target only prefix=stage machines for this deploy.',
+          'prefix': '[Optional] Use a prefix to target specific groups of machines for this deploy.',
+          'branch': '[Optional] Deploy from the tip of a branch other than master.',
+          'commit': '[Optional] Deploy from a specific commit rather than a branch tip.'
         }
     });
   }
