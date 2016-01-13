@@ -245,21 +245,14 @@ module.exports = function(task, args) {
     deployment: {
         jumpServer: 'server.ex.imgix.com',
         loko: {
-            package: 'imgix-app-deploy',
-            configFile: path.join(appBase, 'loko.cfg'),
-            hooks: [
-                path.join(appBase, 'dev', 'loko', '*.sh')
-              ]
+            package: 'imgix-app-deploy'
           },
         ansible: {
-            config: 'this_app.yaml'
+            configFile: 'this_app.yml'
           },
         repository: {
             url: 'git@github.com:zebrafishlabs/imgix-app',
             branch: 'master'
-          },
-        mdb: {
-            tag: 'imgix-app'
           }
       }
   };

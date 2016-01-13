@@ -476,7 +476,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
         'cd /repos/ansible-repo',
 
         // Run ansible playbook
-        'ansible-playbook -e loko_version=\\$VERSION -e prefix=<%= args.prefix || "prod" %> <%= ansible.config %>'
+        'ansible-playbook -e loko_version=\\$VERSION -e prefix=<%= args.prefix || "prod" %> <%= ansible.configFile %>'
       );
 
       // ssh [server] "[line1] && [line2] && ..."
