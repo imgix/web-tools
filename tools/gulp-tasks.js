@@ -443,32 +443,25 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
   /*--- Deploy Task ---*/
   if (!!config.deployment) {
     gulp.task('deploy', function deployTask() {
-      var lines = [],
+      var lines,
           templateData,
           compiledCommand;
 
       // Merge command-line args into config settings
       templateData = _.merge({
         args: _.pick(args, [
-            'prefix',
+            'staging',
             'branch',
             'commit'
           ])
       }, config.deployment);
 
-      // --staging is a shortcut for --prefix=stage
-      if (args.staging && !args.prefix) {
-        templateData.args.prefix = 'stage';
-      }
+      lines = [
+        // Get version for loko and ansible
+        (args.commit ?
+          'VERSION=<%= args.commit %>' :
+          'VERSION=`git ls-remote <%= repository.url %> <%= args.branch || repository.branch || "master" %> | cut -f 1`'),
 
-      // Get version for loko and ansible
-      if (args.commit) {
-        lines.push('VERSION=<%= args.commit %>');
-      } else {
-        lines.push('VERSION=`git ls-remote <%= repository.url %> <%= args.branch || repository.branch || "master" %> | cut -f 1`');
-      }
-
-      lines.push(
         // Publish loko package
         'loko -D publish <%= loko.package %> \\$VERSION',
 
@@ -476,8 +469,8 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
         'cd /repos/ansible-repo',
 
         // Run ansible playbook
-        'ansible-playbook -e loko_version=\\$VERSION -e prefix=<%= args.prefix || "prod" %> <%= ansible.configFile %>'
-      );
+        'ansible-playbook -e loko_version=\\$VERSION -e prefix=<%= args.staging ? "stage" : "prod" %> <%= ansible.configFile %>'
+      ];
 
       // ssh [server] "[line1] && [line2] && ..."
       compiledCommand = _.template('ssh <%= jumpServer %> "' + lines.join(' && ') + '"')(templateData);
@@ -489,8 +482,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
       category: 'deploy',
       arguments: {
           'staging': '[Optional] Target only prefix=stage machines for this deploy.',
-          'prefix': '[Optional] Use a prefix to target specific groups of machines for this deploy.',
-          'branch': '[Optional] Deploy from the tip of a branch other than master.',
+          'branch': '[Optional] Deploy from the tip of a specific branch. Defaults to "master".',
           'commit': '[Optional] Deploy from a specific commit rather than a branch tip.'
         }
     });
