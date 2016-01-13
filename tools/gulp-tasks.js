@@ -1,15 +1,14 @@
 var _ = require('lodash'),
     path = require('path'),
     fs = require('fs'),
-    exec = require('child_process').exec,
     merge = require('merge2'),
     combine = require('stream-combiner'),
-    Q = require('q'),
     args = require('yargs').argv,
     mainBowerFiles = require('main-bower-files'),
     gutil = require('gulp-util'),
     builders = require('./builders.js'),
-    streamCache = require('./stream-cache.js');
+    streamCache = require('./stream-cache.js'),
+    runCommand = require('./run-command.js');
 
 module.exports = function setupGulpTasks(gulp, configFactory) {
   var runningTask,
@@ -444,35 +443,24 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
   /*--- Deploy Task ---*/
   if (!!config.deployment) {
     gulp.task('deploy', function deployTask() {
-      var prefix = args.prefix || 'prod',
-          lines,
+      var lines,
+          templateData,
           compiledCommand;
 
-      function runCommand(command) {
-        var child,
-            dfd = Q.defer();
-
-        child = exec(command, function (error, stdout, stderr) {
-          if (error) {
-            error.stdout = stdout;
-            error.stderr = stderr;
-            error.message = 'Error running command: `' + command + '`.';
-
-            dfd.reject(error);
-          } else {
-            dfd.resolve();
-          }
-        });
-
-        child.stdout.pipe(process.stdout);
-        child.stderr.pipe(process.stderr);
-
-        return dfd.promise;
-      }
+      // Merge command-line args into config settings
+      templateData = _.merge({
+        args: _.pick(args, [
+            'staging',
+            'branch',
+            'commit'
+          ])
+      }, config.deployment);
 
       lines = [
         // Get version for loko and ansible
-        'VERSION=`git ls-remote <%= repository.url %> <%= repository.branch %> | cut -f 1`',
+        (args.commit ?
+          'VERSION=<%= args.commit %>' :
+          'VERSION=`git ls-remote <%= repository.url %> <%= args.branch || repository.branch || "master" %> | cut -f 1`'),
 
         // Publish loko package
         'loko -D publish <%= loko.package %> \\$VERSION',
@@ -481,11 +469,11 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
         'cd /repos/ansible-repo',
 
         // Run ansible playbook
-        'ansible-playbook -e loko_version=\\$VERSION -e prefix=' + prefix + ' <%= ansible.config %>'
+        'ansible-playbook -e loko_version=\\$VERSION -e prefix=<%= args.staging ? "stage" : "prod" %> <%= ansible.configFile %>'
       ];
 
       // ssh [server] "[line1] && [line2] && ..."
-      compiledCommand = _.template('ssh <%= jumpServer %> "' + lines.join(' && ') + '"')(config.deployment);
+      compiledCommand = _.template('ssh <%= jumpServer %> "' + lines.join(' && ') + '"')(templateData);
 
       return runCommand(compiledCommand);
     });
@@ -493,7 +481,9 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
       description: 'Publish, configure and deploy code on remote servers using Loko and Ansible.',
       category: 'deploy',
       arguments: {
-          'prefix' : '[Optional] Use a prefix to target specific groups of machines for this deploy.'
+          'staging': '[Optional] Target only prefix=stage machines for this deploy.',
+          'branch': '[Optional] Deploy from the tip of a specific branch. Defaults to "master".',
+          'commit': '[Optional] Deploy from a specific commit rather than a branch tip.'
         }
     });
   }
