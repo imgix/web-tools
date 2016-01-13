@@ -1,11 +1,11 @@
 var exec = require('child_process').exec,
     Q = require('q');
 
-module.exports = function runCommand(command) {
+module.exports = function runCommand(command, options) {
   var child,
       dfd = Q.defer();
 
-  child = exec(command, function callback(error, stdout, stderr) {
+  child = exec(command, options, function callback(error, stdout, stderr) {
     if (error) {
       error.stdout = stdout;
       error.stderr = stderr;
@@ -13,11 +13,10 @@ module.exports = function runCommand(command) {
 
       dfd.reject(error);
     } else {
-      dfd.resolve();
+      dfd.resolve(stdout);
     }
   });
 
-  child.stdout.pipe(process.stdout);
   child.stderr.pipe(process.stderr);
 
   return dfd.promise;

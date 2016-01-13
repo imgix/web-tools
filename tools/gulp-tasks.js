@@ -253,7 +253,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
     });
 
     gulp.task('serve-load', function serveLoadTask() {
-      require('./chrome-load.js')(getServerURL(config.server));
+      return require('./chrome-load.js')(getServerURL(config.server));
     });
     gulpMetadata.addTask('serve-load', {
       description: 'Reload existing Chrome tabs that are pointing to the local server, or open a new tab if none exists.',
