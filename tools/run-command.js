@@ -13,11 +13,10 @@ module.exports = function runCommand(command, options) {
 
       dfd.reject(error);
     } else {
-      dfd.resolve();
+      dfd.resolve(stdout);
     }
   });
 
-  child.stdout.pipe(process.stdout);
   child.stderr.pipe(process.stderr);
 
   return dfd.promise;
