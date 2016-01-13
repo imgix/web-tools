@@ -504,14 +504,14 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
         // Get the prior version for loko and ansible
         'VERSION=`curl http://sjc1-loko-api.prod.imgix.com:8090/v1/releases/<%= loko.package %> | python -c \'import sys, json; print json.load(sys.stdin)["recent"][<%= args.rel ? (args.rel - 1) : 0 %>]\'`',
 
-        // Rollback loko package
-        'loko -D rollback -r<%= args.rel || "1" %> <%= loko.package %>',
-
         // Move to ansible-repo directory
         'cd /repos/ansible-repo',
 
         // Run ansible playbook
-        'ansible-playbook -e loko_version=\\$VERSION -e prefix=<%= args.staging ? "stage" : "prod" %> <%= ansible.configFile %>'
+        'ansible-playbook -e loko_version=\\$VERSION -e prefix=<%= args.staging ? "stage" : "prod" %> <%= ansible.configFile %>',
+
+        // Rollback loko package
+        'loko -D rollback -r<%= args.rel || "1" %> <%= loko.package %>'
       ];
 
       // ssh [server] "[line1] && [line2] && ..."
