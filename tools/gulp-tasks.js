@@ -486,6 +486,47 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
           'commit': '[Optional] Deploy from a specific commit rather than a branch tip.'
         }
     });
+
+    gulp.task('rollback', function deployTask() {
+      var lines,
+          templateData,
+          compiledCommand;
+
+      // Merge command-line args into config settings
+      templateData = _.merge({
+        args: _.pick(args, [
+            'staging',
+            'rel'
+          ])
+      }, config.deployment);
+
+      lines = [
+        // Get the prior version for loko and ansible
+        'VERSION=`curl http://sjc1-loko-api.prod.imgix.com:8090/v1/releases/<%= loko.package %> | python -c \'import sys, json; print json.load(sys.stdin)["recent"][<%= args.rel ? (args.rel - 1) : 0 %>]\'`',
+
+        // Rollback loko package
+        'loko -D rollback -r<%= args.rel || "1" %> <%= loko.package %>',
+
+        // Move to ansible-repo directory
+        'cd /repos/ansible-repo',
+
+        // Run ansible playbook
+        'ansible-playbook -e loko_version=\\$VERSION -e prefix=<%= args.staging ? "stage" : "prod" %> <%= ansible.configFile %>'
+      ];
+
+      // ssh [server] "[line1] && [line2] && ..."
+      compiledCommand = _.template('ssh <%= jumpServer %> "' + lines.join(' && ') + '"')(templateData);
+
+      return runCommand(compiledCommand);
+    });
+    gulpMetadata.addTask('rollback', {
+      description: 'Rollback a deployment on remote servers using Loko and Ansible.',
+      category: 'deploy',
+      arguments: {
+          'staging': '[Optional] Target only prefix=stage machines for this rollback.',
+          'rel': '[Optional] Rollback this many versions. Max is 5, defaults to 1.'
+        }
+    });
   }
 
   /*--- Default Task ---*/
