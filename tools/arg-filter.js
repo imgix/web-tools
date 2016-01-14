@@ -4,14 +4,18 @@ var _ = require('lodash'),
 
 module.exports = function argFilter(args) {
   var gulpPlugins = loadGulpPlugins(),
-      matcher,
+      regexen,
       pipeline = [];
 
   if (!!args.match) {
-    matcher = new RegExp(args.match.replace('/', '\\/'), 'i');
+    regexen = _.map(args.match.split(','), function makeRegex(match) {
+      return new RegExp(match.replace('/', '\\/'), 'i');
+    });
 
     pipeline.push(gulpPlugins.filter(function filterFiles(file) {
-      return matcher.test(file.path);
+      return _.any(regexen, function testFileWithRegex(regex) {
+        return regex.test(file.path);
+      });
     }));
   }
 

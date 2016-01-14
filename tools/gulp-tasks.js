@@ -358,7 +358,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
       category: 'main',
       weight: 4,
       arguments: {
-          'match': '[Optional] Only test files with names containing the given string will be run.'
+          'match': '[Optional] A comma-separated list of strings to match test filepaths against.'
         }
     });
 
@@ -397,7 +397,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
         description: 'Run unit tests with Karma.',
         category: 'test',
         arguments: {
-            'match': '[Optional] Only test files with names containing the given string will be run.'
+            'match': '[Optional] A comma-separated list of strings to match test filepaths against.'
           }
       });
     }
