@@ -32,7 +32,7 @@
     "gulp-load-plugins": "^1.1.0",
     "gulp-ng-html2js": "^0.2.0",
     "gulp-postcss": "^6.0.0",
-    "gulp-processhtml": "^1.1.0",
+    "gulp-processhtml": "git+ssh://git@github.com/zebrafishlabs/gulp-processhtml#master",
     "gulp-rename": "^1.2.2",
     "gulp-rev": "^5.0.1",
     "gulp-sourcemaps": "^1.5.2",
