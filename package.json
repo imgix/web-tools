@@ -1,11 +1,12 @@
 {
   "name": "web-tools",
-  "version": "4.1.1",
+  "version": "4.1.2",
   "description": "Repository for tools and configurations common to all imgix web projects",
   "license": "UNLICENSED",
   "repository": "zebrafishlabs/web-tools",
   "//": "Fixing karma version number to 0.13.15 because https://github.com/karma-runner/karma/issues/1788",
   "//": "Fixing socket.io version number to 1.3.7 because https://github.com/karma-runner/karma/issues/1788",
+  "//": "Fixing htmlprocessor to 0.1.10 because 0.2.0 yields an error when trying to build",
   "dependencies": {
     "autoprefixer": "^6.0.3",
     "autoprefixer-core": "^6.0.1",
@@ -39,6 +40,7 @@
     "gulp-svgstore": "^5.0.2",
     "gulp-uglify": "^1.2.0",
     "gulp-util": "^3.0.7",
+    "htmlprocessor": "0.1.10",
     "jasmine": "^2.3.2",
     "jasmine-core": "^2.3.4",
     "jasmine-terminal-reporter": "^1.0.0",
