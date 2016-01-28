@@ -13,7 +13,14 @@ module.exports = function buildSVG(options) {
     svgStoreOptions: {},
     svgMinOptions: {
         plugins: [
-            {cleanupIDs: false}
+            {
+                cleanupIDs: false
+              },
+            {
+                removeUnknownsAndDefaults: {
+                    defaultAttrs: false
+                  }
+              }
           ]
       },
     minifyRenameOptions: {
