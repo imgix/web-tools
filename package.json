@@ -1,6 +1,6 @@
 {
   "name": "web-tools",
-  "version": "4.1.3",
+  "version": "4.1.4",
   "description": "Repository for tools and configurations common to all imgix web projects",
   "license": "UNLICENSED",
   "repository": "zebrafishlabs/web-tools",
