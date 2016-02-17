@@ -289,7 +289,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
 
             // Queue a build for any other assets that are dependent on this one
             _.each(config.appAssets, function examineAppDependencies(dependentAssetOptions, dependentAssetType) {
-              if (_.contains(dependentAssetOptions.appAssetDependencies, assetType)) {
+              if (_.includes(dependentAssetOptions.appAssetDependencies, assetType)) {
                 tasks.push('build-app-' + dependentAssetType);
               }
             });

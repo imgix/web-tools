@@ -42,7 +42,7 @@ module.exports = function versionBump(bumpBy) {
             if (!!bumpBy && semver.valid(bumpBy)) {
               newVersion = bumpBy;
             } else {
-              if (!_.contains(BUMP_OPTIONS, bumpBy)) {
+              if (!_.includes(BUMP_OPTIONS, bumpBy)) {
                 bumpBy = 'minor';
               }
 
