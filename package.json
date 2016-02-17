@@ -65,7 +65,6 @@
     "postcss-discard-comments": "2.0.4",
     "postcss-each": "0.9.1",
     "postcss-easings": "0.3.0",
-    "postcss-fakeid": "1.0.2",
     "postcss-font-variant": "2.0.0",
     "postcss-for": "2.0.1",
     "postcss-import": "8.0.2",

@@ -43,7 +43,6 @@ PROCESS_PLUGINS = [
   // Some niceties
   'postcss-easings',
   'postcss-clearfix',
-  'postcss-fakeid',
 
   // Browser compat
   'autoprefixer',
