@@ -30,7 +30,7 @@ module.exports = function setUp(gulp) {
                 return chalk.cyan(name);
               } else {
                 // Gotta pad with a real character here to fake the width during measurement
-                return _.padRight(name, longestName, '-');
+                return _.padEnd(name, longestName, '-');
               }
               return ;
             });
@@ -58,7 +58,7 @@ module.exports = function setUp(gulp) {
           var base = '-- ' + changeCase.title(category) + ' Tasks ',
               padLength = 40;
 
-          return chalk.blue(_.padRight(base, padLength, '-'));
+          return chalk.blue(_.padEnd(base, padLength, '-'));
         }
 
         groupedTasks = _.groupBy(taskMetadata, 'category');

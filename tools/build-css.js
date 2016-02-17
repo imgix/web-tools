@@ -43,7 +43,6 @@ PROCESS_PLUGINS = [
   // Some niceties
   'postcss-easings',
   'postcss-clearfix',
-  'postcss-fakeid',
 
   // Browser compat
   'autoprefixer',
@@ -72,10 +71,7 @@ module.exports = function buildCSS(options) {
       },
     pluginOptions: {
         stylelint: {
-            rules: require('../runcoms/rc.stylelint.json'),
-            plugins: {
-                'statement-max-nesting-depth': require('stylelint-statement-max-nesting-depth')
-              }
+            rules: require('../runcoms/rc.stylelint.json')
           },
         'postcss-import': {
             plugins: [
@@ -86,6 +82,9 @@ module.exports = function buildCSS(options) {
                 // PostCSS-import doesn't allow non-css syntaxes in its parser
                 return fileContents.replace(/\/\/\s(.*)\n/g, '/* $1 */\n');
               }
+          },
+        'postcss-simple-vars': {
+            silent: true
           }
       },
     minifyRenameOptions: {
