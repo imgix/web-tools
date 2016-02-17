@@ -113,73 +113,6 @@ module.exports = (function constructor() {
         }
 
         // Viewport capture functions
-        function saveAreaScreenshotsForAllWidths(widths, areas, destination, fileNamePattern) {
-          var viewportObjects = [];
-
-          return _.reduce(widths, function makePromise(runningPromise, width) {
-            return runningPromise
-              .then(_.partial(getViewportDataForWidth, width, areas))
-              .then(viewportObjects.push.bind(viewportObjects));
-          }, new Q())
-
-            .then(function saveAreaScreenshots() {
-                return Q.all(_.map(viewportObjects, function loopOverViewportObjects(viewportObject) {
-                  var patternForWidth = fileNamePattern.replace(/%w/g, viewportObject.width);
-
-                  return Q.all(_.map(viewportObject.areas, function loopOverAreaObjects(area) {
-                    var fileName = patternForWidth.replace(/%n/g, area.name),
-                        fullPath = path.join(destination, fileName);
-
-                    return Q.nbind(area.screenshot.write, area.screenshot)(fullPath)
-                      .then(function getObject() {
-                          return {
-                            name: area.name,
-                            selector: area.selector,
-                            screenshot: fullPath,
-                            width: viewportObject.width
-                          };
-                        });
-                  }));
-                }));
-              })
-
-            .then(_.flatten)
-
-            .catch(_.partial(rm, destination));
-        }
-
-        function getViewportDataForWidth(width, areas) {
-          var viewportObject = {
-            width: width
-          };
-
-          function cacheOnViewportObject(key, value) {
-            viewportObject[key] = value;
-
-            return viewportObject;
-          }
-
-          return setBrowserWidth(width)
-
-            // Get the browser dimensions
-            .then(measureBrowser)
-
-            // Cache the browser dimensions on the viewport object
-            .then(_.partial(cacheOnViewportObject, 'dimensions'))
-
-            // Capture a full screenshot of the viewport
-            .then(_.partial(screenshotFullViewport, viewportObject))
-
-            // Cache the resultant screenshot image on the viewport object
-            .then(_.partial(cacheOnViewportObject, 'screenshot'))
-
-            // Crop the screenshot for each area
-            .then(_.partial(screenshotAllAreasInViewport, areas, viewportObject))
-
-            // Cache the resultant array of area objects on the viewport object
-            .then(_.partial(cacheOnViewportObject, 'areas', _));
-        }
-
         function screenshotFullViewport(viewportObject) {
           var fileName = _.uniqueId('screenshot-') + '-' + viewportObject.width + '.png',
               fullPath = path.join(tempDir, fileName);
@@ -226,6 +159,73 @@ module.exports = (function constructor() {
           }
 
           return Q.all(_.map(areas, _.partial(screenshotAreaInViewport, _, viewportObject)));
+        }
+
+        function getViewportDataForWidth(width, areas) {
+          var viewportObject = {
+            width: width
+          };
+
+          function cacheOnViewportObject(key, value) {
+            viewportObject[key] = value;
+
+            return viewportObject;
+          }
+
+          return setBrowserWidth(width)
+
+            // Get the browser dimensions
+            .then(measureBrowser)
+
+            // Cache the browser dimensions on the viewport object
+            .then(_.partial(cacheOnViewportObject, 'dimensions'))
+
+            // Capture a full screenshot of the viewport
+            .then(_.partial(screenshotFullViewport, viewportObject))
+
+            // Cache the resultant screenshot image on the viewport object
+            .then(_.partial(cacheOnViewportObject, 'screenshot'))
+
+            // Crop the screenshot for each area
+            .then(_.partial(screenshotAllAreasInViewport, areas, viewportObject))
+
+            // Cache the resultant array of area objects on the viewport object
+            .then(_.partial(cacheOnViewportObject, 'areas', _));
+        }
+
+        function saveAreaScreenshotsForAllWidths(widths, areas, destination, fileNamePattern) {
+          var viewportObjects = [];
+
+          return _.reduce(widths, function makePromise(runningPromise, width) {
+            return runningPromise
+              .then(_.partial(getViewportDataForWidth, width, areas))
+              .then(viewportObjects.push.bind(viewportObjects));
+          }, new Q())
+
+            .then(function saveAreaScreenshots() {
+                return Q.all(_.map(viewportObjects, function loopOverViewportObjects(viewportObject) {
+                  var patternForWidth = fileNamePattern.replace(/%w/g, viewportObject.width);
+
+                  return Q.all(_.map(viewportObject.areas, function loopOverAreaObjects(area) {
+                    var fileName = patternForWidth.replace(/%n/g, area.name),
+                        fullPath = path.join(destination, fileName);
+
+                    return Q.nbind(area.screenshot.write, area.screenshot)(fullPath)
+                      .then(function getObject() {
+                          return {
+                            name: area.name,
+                            selector: area.selector,
+                            screenshot: fullPath,
+                            width: viewportObject.width
+                          };
+                        });
+                  }));
+                }));
+              })
+
+            .then(_.flatten)
+
+            .catch(_.partial(rm, destination));
         }
 
         function compareToPriorScreenshots(areas, mismatchTolerance, baselineDir, diffsDir) {
@@ -357,12 +357,12 @@ module.exports = (function constructor() {
                     group.passCount++;
                   }
 
-                  group.widths[areaObject.width] = _.pick(areaObject,
-                    'passedComparison',
-                    'misMatchPercentage',
-                    'screenshot',
-                    'diff'
-                  );
+                  group.widths[areaObject.width] = _.pick(areaObject, [
+                      'passedComparison',
+                      'misMatchPercentage',
+                      'screenshot',
+                      'diff'
+                    ]);
                 });
 
                 return output;
