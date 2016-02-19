@@ -55,7 +55,7 @@ module.exports = function(task, args) {
                 doConcat: isProd,
                 doBanner: isProd,
                 doVersioning: isProd,
-                doSourcemaps: isProd,
+                doSourceMaps: isProd,
                 concatName: name + '.js',
                 banner: banner
               }
@@ -71,7 +71,7 @@ module.exports = function(task, args) {
                 doConcat: isProd,
                 doBanner: isProd,
                 doVersioning: isProd,
-                doSourcemaps: isProd,
+                doSourceMaps: isProd,
                 concatName: name + '.tmpl.js',
                 banner: banner,
                 ngHtml2JsOptions: {
@@ -91,7 +91,7 @@ module.exports = function(task, args) {
                 doConcat: isProd,
                 doBanner: isProd,
                 doVersioning: isProd,
-                doSourcemaps: isProd,
+                doSourceMaps: isProd,
                 concatName: name + '.css',
                 banner: banner,
                 pluginOptions: {
@@ -173,7 +173,7 @@ module.exports = function(task, args) {
                 doConcat: isProd,
                 doBanner: false,
                 doVersioning: isProd,
-                doSourcemaps: isProd,
+                doSourceMaps: isProd,
                 concatName: 'libs.js'
               },
             dest: path.join(appDestBase, 'scripts', 'libs')
@@ -186,7 +186,7 @@ module.exports = function(task, args) {
                 doConcat: isProd,
                 doBanner: false,
                 doVersioning: isProd,
-                doSourcemaps: isProd,
+                doSourceMaps: isProd,
                 concatName: 'libs.css'
               },
             dest: path.join(appDestBase, 'styles', 'libs')
