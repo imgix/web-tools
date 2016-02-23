@@ -13,7 +13,7 @@ module.exports = function argFilter(args) {
     });
 
     pipeline.push(gulpPlugins.filter(function filterFiles(file) {
-      return _.any(regexen, function testFileWithRegex(regex) {
+      return _.some(regexen, function testFileWithRegex(regex) {
         return regex.test(file.path);
       });
     }));
