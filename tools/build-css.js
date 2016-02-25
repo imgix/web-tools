@@ -87,6 +87,10 @@ module.exports = function buildCSS(options) {
             silent: true
           }
       },
+    minifyOptions: {
+        reduceIdents: false,
+        mergeIdents: false
+      },
     minifyRenameOptions: {
         extname: '.min.css'
       }
@@ -107,7 +111,7 @@ module.exports = function buildCSS(options) {
         ),
 
       // Productionization pipeline
-      options.doMinify && gulpPlugins.cssnano(),
+      options.doMinify && gulpPlugins.cssnano(options.minifyOptions),
       options.doConcat && gulpPlugins.concat(options.concatName),
       options.doBanner && gulpPlugins.header(options.banner),
       options.doVersioning && gulpPlugins.rev(),
