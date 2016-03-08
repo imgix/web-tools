@@ -168,7 +168,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
       _.each(config.extAssets, function addExtBuildTask(assetOptions, assetType) {
         gulp.task('build-ext-' + assetType, function task() {
           var pipeline = combine(_.compact([
-            gulpPlugins.filter(assetOptions.filter || '*.' + assetType),
+            gulpPlugins.filter(assetOptions.filter || '**/*.' + assetType),
             assetOptions.build && !!builders[assetType] && builders[assetType](assetOptions.buildOptions),
             assetOptions.dest && gulp.dest(assetOptions.dest),
             streamCache.put('ext-' + assetType)
