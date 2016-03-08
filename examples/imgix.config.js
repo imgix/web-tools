@@ -197,9 +197,9 @@ module.exports = function(task, args) {
           },
         fonts: {
             filter: [
-                '*.woff2',
-                '*.woff',
-                '*.ttf'
+                '**/*.woff2',
+                '**/*.woff',
+                '**/*.ttf'
               ],
             dest: path.join(appDestBase, 'fonts')
           }
