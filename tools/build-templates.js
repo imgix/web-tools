@@ -17,7 +17,6 @@ module.exports = function buildTemplates(options) {
     doConcat: false,
     doBanner: false,
     doVersioning: false,
-    doSourceMaps: false,
 
     moduleName: 'override-me',
     concatName: 'override_me.tmpl.js',
