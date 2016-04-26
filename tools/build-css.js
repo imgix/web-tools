@@ -90,7 +90,8 @@ module.exports = function buildCSS(options) {
     minifyOptions: {
         reduceIdents: false,
         mergeIdents: false,
-        discardUnused: false
+        discardUnused: false,
+        zindex: false
       },
     minifyRenameOptions: {
         extname: '.min.css'
