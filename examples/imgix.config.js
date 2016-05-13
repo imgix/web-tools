@@ -119,6 +119,7 @@ module.exports = function(task, args) {
                 path.join(appSrcBase, 'partials', '*.html')
               ],
             build: true,
+            builder: 'html',
             buildOptions: {
                 doMinify: false, // No need to ever minify here, since minifying the whole page will take care of it
                 processOptions: {

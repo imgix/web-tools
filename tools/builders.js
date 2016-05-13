@@ -11,9 +11,6 @@ module.exports = {
   svg: function proxyBuildSVG() {
       return require('./build-svg.js').apply(null, arguments);
     },
-  partials: function proxyBuildPartials() {
-      return require('./build-html.js').apply(null, arguments);
-    },
   html: function proxyBuildHTML() {
       return require('./build-html.js').apply(null, arguments);
     }

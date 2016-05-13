@@ -123,6 +123,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
 
         gulp.task('build-app-' + assetType, taskDependencies, function task() {
           var assetDependencyStreams,
+              builder,
               pipeline;
 
           if (taskDependencies.length) {
@@ -132,8 +133,16 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
             };
           }
 
+          if (!assetOptions.builder) {
+            builder = builders[assetType];
+          } else if (_.isFunction(assetOptions.builder)) {
+            builder = assetOptions.builder;
+          } else {
+            builder = builders[assetOptions.builder];
+          }
+
           pipeline = combine(_.compact([
-            assetOptions.build && !!builders[assetType] && builders[assetType](assetOptions.buildOptions, assetDependencyStreams),
+            assetOptions.build && builder && builder(assetOptions.buildOptions, assetDependencyStreams),
             assetOptions.dest && gulp.dest(assetOptions.dest),
             streamCache.put('app-' + assetType)
           ]));
