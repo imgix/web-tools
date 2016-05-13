@@ -12,7 +12,7 @@ module.exports = function buildHTML(options, injectableStreams) {
     return combine(_(injectableStreams).map(function streamLoop(stream, name) {
       if (stream) {
         return gulpPlugins.inject(stream, _.merge(
-          { name: name },
+          {name: name},
           options.injectOptions
         ));
       }
