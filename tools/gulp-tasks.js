@@ -127,10 +127,15 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
               pipeline;
 
           if (taskDependencies.length) {
-            assetDependencyStreams = {
-              app: merge.apply(null, _(appAssetDependencies).map(streamCache.get).compact().value()),
-              ext: merge.apply(null, _(extAssetDependencies).map(streamCache.get).compact().value())
-            };
+            assetDependencyStreams = {};
+
+            _.each(appAssetDependencies.concat(extAssetDependencies), function getStream(name) {
+              var stream = streamCache.get(name);
+
+              if (!!stream) {
+                assetDependencyStreams[name] = streamCache.get(name);
+              }
+            });
           }
 
           if (!assetOptions.builder) {

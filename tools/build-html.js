@@ -12,7 +12,7 @@ module.exports = function buildHTML(options, injectableStreams) {
     return combine(_(injectableStreams).map(function streamLoop(stream, name) {
       if (stream) {
         return gulpPlugins.inject(stream, _.merge(
-          {name: 'inject:' + name},
+          { name: name },
           options.injectOptions
         ));
       }
@@ -53,6 +53,7 @@ module.exports = function buildHTML(options, injectableStreams) {
         relative: false,
         quiet: true,
         removeTags: true,
+        starttag: '<!-- inject:{{name}} -->',
         empty: true,
         transform: transformForInjection
       },
