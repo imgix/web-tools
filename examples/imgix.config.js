@@ -188,7 +188,13 @@ module.exports = function(task, args) {
                 doBanner: false,
                 doVersioning: isProd,
                 doSourceMaps: isProd,
-                concatName: 'libs.css'
+                concatName: 'libs.css',
+                pluginOptions: {
+                    'postcss-plugins': {
+                        root: appBase,
+                        path: appSrcBase
+                      }
+                  }
               },
             dest: path.join(appDestBase, 'styles', 'libs')
           },
