@@ -228,12 +228,8 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
       app = express();
       app.use(express.static(config.destPath));
 
-      if (config.appAssets.html) {
-        app.get('*', function respond(request, response) {
-          response.sendFile('index.html', {
-            root: config.appAssets.html.dest
-          });
-        });
+      if (_.isFunction(config.server.route)) {
+        config.server.route(app);
       }
 
       if (config.server.ssl) {
