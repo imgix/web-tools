@@ -76,7 +76,7 @@
     "postcss-selector-not": "2.0.0",
     "postcss-simple-vars": "1.2.0",
     "q": "1.4.1",
-    "reporter-plus": "git://github.com/jayeb/reporter-plus.git#1.5.2",
+    "reporter-plus": "git://github.com/jayeb/reporter-plus.git#1.6.0",
     "rimraf": "2.5.2",
     "run-sequence": "1.1.5",
     "selenium-standalone": "5.0.0",
