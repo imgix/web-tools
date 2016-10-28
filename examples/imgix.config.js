@@ -247,20 +247,6 @@ module.exports = function(task, args) {
             screenshotRoot: appTestBase,
             widths: [320, 480, 640, 768, 1024]
           }
-      },
-
-    deployment: {
-        jumpServer: 'server.ex.imgix.com',
-        loko: {
-            package: 'imgix-app-deploy'
-          },
-        ansible: {
-            configFile: 'this_app.yml'
-          },
-        repository: {
-            url: 'git@github.com:zebrafishlabs/imgix-app',
-            branch: 'master'
-          }
       }
   };
 }
