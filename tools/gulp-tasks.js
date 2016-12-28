@@ -229,7 +229,7 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
       if (_.isFunction(config.server.setup)) {
         app = config.server.setup(config);
       } else {
-        express = require('express')
+        express = require('express');
         app = express();
         app.use(express.static(config.destPath));
       }
