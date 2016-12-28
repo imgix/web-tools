@@ -216,8 +216,9 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
     });
 
     gulp.task('serve-start', function serveStartTask(done) {
-      var express = require('express'),
-          app;
+      var app,
+          express,
+          protocol;
 
       // If the server is already running, no need to do anything
       if (appServer) {
@@ -225,22 +226,25 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
         return;
       }
 
-      app = express();
-      app.use(express.static(config.destPath));
-
-      if (_.isFunction(config.server.route)) {
-        config.server.route(app);
+      if (_.isFunction(config.server.setup)) {
+        app = config.server.setup(config);
+      } else {
+        express = require('express')
+        app = express();
+        app.use(express.static(config.destPath));
       }
 
       if (config.server.ssl) {
-        appServer = require('https').createServer({
+        protocol = require('https');
+        appServer = protocol.createServer({
           key: fs.readFileSync(config.server.key),
           cert: fs.readFileSync(config.server.cert),
           requestCert: false,
           rejectUnauthorized: false
         }, app);
       } else {
-        appServer = require('http').createServer(app);
+        protocol = require('http')
+        appServer = protocol.createServer(app);
       }
 
       appServer.listen(config.server.port, done);
