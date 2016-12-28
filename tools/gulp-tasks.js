@@ -353,12 +353,12 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
   }
 
   /*--- Test Tasks ---*/
-  if (!!config.unitTests || !!config.integrationTests) {
+  if (!!config.unitTests || !!config.acceptanceTests) {
     // Main test task:
     gulp.task('test', function testTask(done) {
       var testTasks = _.compact([
         !!config.unitTests && 'test-unit',
-        !!config.integrationTests && 'test-integration'
+        !!config.acceptanceTests && 'test-acceptance'
       ]);
 
       runSequence(testTasks, done);
@@ -412,18 +412,18 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
       });
     }
 
-    if (!!config.integrationTests) {
-      gulp.task('test-integration', function testIntegrationTask(done) {
+    if (!!config.acceptanceTests) {
+      gulp.task('test-acceptance', function testAcceptanceTask(done) {
         runSequence(
-          'build',
+          // 'build',
           'serve-start',
-          'test-integration-run',
+          'test-acceptance-run',
           'serve-stop',
           done
         );
       });
-      gulpMetadata.addTask('test-integration', {
-        description: 'Initialize, run, and clean up integration tests (including visual regression tests) with Selenium and Webdriver.',
+      gulpMetadata.addTask('test-acceptance', {
+        description: 'Initialize, run, and clean up acceptance tests (including visual regression tests) with Selenium and Webdriver.',
         notes: ['This task will override the `env` argument and always run in the `test` environment.'],
         category: 'test',
         arguments: {
@@ -431,17 +431,17 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
           }
       });
 
-      gulp.task('test-integration-run', function testIntegrationRunTask() {
+      gulp.task('test-acceptance-run', function testAcceptanceRunTask() {
         var argFilterPipeline = require('./arg-filter.js'),
-            testIntegrationPipeline = require('./test-integration.js');
+            testAcceptancePipeline = require('./test-acceptance.js');
 
         // Set up stream, with filtration
-        return gulp.src(config.integrationTests.src, {read: false})
+        return gulp.src(config.acceptanceTests.src, {read: false})
           .pipe(argFilterPipeline(args))
-          .pipe(testIntegrationPipeline(config.integrationTests, getServerURL(config.server)));
+          .pipe(testAcceptancePipeline(config.acceptanceTests, getServerURL(config.server)));
       });
-      gulpMetadata.addTask('test-integration-run', {
-        description: 'Initialize and run integration tests (including visual regression tests) with Selenium and Webdriver.',
+      gulpMetadata.addTask('test-acceptance-run', {
+        description: 'Initialize and run acceptance tests (including visual regression tests) with Selenium and Webdriver.',
         category: 'test',
         arguments: {
             'match': '[Optional] Only test files with names containing the given string will be run.'

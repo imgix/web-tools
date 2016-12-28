@@ -238,7 +238,7 @@ module.exports = function(task, args) {
           }
       },
 
-    integrationTests: {
+    acceptanceTests: {
         src: [
             path.join(appTestBase, '**', 'spec.*.js')
           ],

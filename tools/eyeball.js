@@ -117,7 +117,7 @@ module.exports = (function constructor() {
           var fileName = _.uniqueId('screenshot-') + '-' + viewportObject.width + '.png',
               fullPath = path.join(tempDir, fileName);
 
-          return Q.nbind(browser.screenshot, browser)()
+          return browser.screenshot()
             .then(function makeImageFromData(result) {
                 var image = gm(new Buffer(result.value, 'base64'));
 
