@@ -1,6 +1,5 @@
 var _ = require('lodash'),
-    express = require('express'),
-    STATIC_CACHE_AGE = 365 * 24 * 60 * 60 * 1000; // 1 year;
+    express = require('express');
 
 module.exports = function confgureServer(config) {
   var app = express();
@@ -12,7 +11,7 @@ module.exports = function confgureServer(config) {
   app.use('\.html$', express.static(config.destPath));
 
   app.use(express.static(config.destPath, {
-    maxAge: _.get(config, 'server.options.cacheAge', STATIC_CACHE_AGE),
+    maxAge: _.get(config, 'server.options.cacheAge'),
     index: false
   }));
 
