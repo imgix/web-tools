@@ -31,7 +31,7 @@ Before you can integrate `web-tools` into your project, you need to ensure that 
 * **Run `sudo npm install npm -g`** to update Node's package manager, [NPM](npmjs.com). NPM comes bundled with Node, but this will make sure it's up to date.
 * **Run `npm install -g gulp`** to install [Gulp](http://gulpjs.com/) via NPM. Gulp is a task-runner that our tools rely on.
 * **Run `npm install -g bower`** to install [Bower](http://bower.io/) via NPM. Bower is a client-side package manager that your project should use.
-* **Run `npm install -g selenium-standalone`** to install a package from NPM that includes [Selenium](http://www.seleniumhq.org/) and its associated webdrivers. Selenium is needed to run integration tests.
+* **Run `npm install -g selenium-standalone`** to install a package from NPM that includes [Selenium](http://www.seleniumhq.org/) and its associated webdrivers. Selenium is needed to run acceptance tests.
 * **Install the Java Runtime**. This is necessary to run Selenium properly. The easiest way to accomplish this is with the Brew/Cask instructions found [here](http://stackoverflow.com/a/28635465/506330).
 * **Run `brew install graphicsmagick`** to install the [GraphicsMagick](http://www.graphicsmagick.org/) package that helps [Eyeball.js](#eyeball-js) save and crop screenshots.
 * **Run `brew install chrome-cli`** to install the [chrome-cli](https://github.com/prasmussen/chrome-cli) client that allows us to examine and manipulate Chrome tabs on your machine, for auto-reloading.
@@ -97,7 +97,7 @@ The **`gulp test`** command runs all of the tests currently configured on your p
 
 If your config file has a `unitTests` hash, the `gulp test-unit` task will be available. This task runs your unit test files (defined as a glob in `unitTests.src` in your config) in the browser of your choice (defaults to PhantomJS) with [Karma runner](#karma).
 
-If your config file has a `integrationTests` hash, the `gulp test-integration` task will be available. This task runs your integration test specs (defined as a glob in `integrationTests.src` in your config), using [WebdriverIO](#webdriverio). Integration test specs can also make use of [Eyeball.js](#eyeball-js) to run visual-regression checks on your app, to spot unintended visual changes. Read more about how this system works in the ["Eyeball.js" section](#eyeball-js) below.
+If your config file has a `acceptanceTests` hash, the `gulp test-acceptance` task will be available. This task runs your acceptance test specs (defined as a glob in `acceptanceTests.src` in your config), using [WebdriverIO](#webdriverio). Acceptance test specs can also make use of [Eyeball.js](#eyeball-js) to run visual-regression checks on your app, to spot unintended visual changes. Read more about how this system works in the ["Eyeball.js" section](#eyeball-js) below.
 
 Running `gulp test` will run both of these tasks in parallel, if they're both available. Additionally if you set the `--match` flag when running one of these test tasks, the source files being tested will be filtered to only run files that match the string you've provided. For example: `gulp test --match=sign_in`.
 
@@ -128,7 +128,7 @@ If you have gulp installed globally on your machine (`npm install -g gulp`), you
 
 #### [**Jasmine**](http://jasmine.github.io/)
 
-The testing tools in this project are built on top of **Jasmine**. Jasmine is a framework for specifying expectations for the behavior of code, and is suitable for writing both unit tests and integration tests.
+The testing tools in this project are built on top of **Jasmine**. Jasmine is a framework for specifying expectations for the behavior of code, and is suitable for writing both unit tests and acceptance tests.
 
 #### [**Karma**](https://karma-runner.github.io)
 
@@ -136,7 +136,7 @@ This project uses **Karma** as the backbone for its unit-testing tool. Unit test
 
 #### [**WebdriverIO**](http://webdriver.io/)
 
-This project uses **WebdriverIO** to drive its integration-testing tool. Integration tests test complete application code by requesting a real version of the application from a local server and controlling a real browser using [Selenium Standalone](http://www.seleniumhq.org/). Webdriver also allows us to run **visual regression tests** (VRTs), wherein we compare screenshots of the application in its current state to screenshots of the application from a known stable state to help us spot unexpected visual changes. The VRTs are driven by a tool called [Eyeball.js](./tools/eyeball.js).
+This project uses **WebdriverIO** to drive its acceptance-testing tool. Acceptance tests test complete application code by requesting a real version of the application from a local server and controlling a real browser using [Selenium Standalone](http://www.seleniumhq.org/). Webdriver also allows us to run **visual regression tests** (VRTs), wherein we compare screenshots of the application in its current state to screenshots of the application from a known stable state to help us spot unexpected visual changes. The VRTs are driven by a tool called [Eyeball.js](./tools/eyeball.js).
 
 #### [**Eyeball.js**](./tools/eyeball.js)
 
