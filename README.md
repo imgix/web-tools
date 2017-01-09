@@ -149,15 +149,6 @@ If Eyeball.js encounters a pre-existing baseline image for a given test, the new
 If you review the "regression" image and find that it represents an intended change, simply replace the baseline image of the corresponding name with the "regression" image and delete the diff image. Baseline images should be checked into the project's repo. There are rules in [`.gitignore`](./.gitignore) to ensure that regression and diff images can't be checked into the repo by accident.
 
 
-## Appendix: Dependent Projects
-
-The following projects depend on `web-tools`:
-
-* **[`web-shared`](https://github.com/zebrafishlabs/web-shared)**: Shared components and CSS for imgix web properties
-* **[`web-styleguide`](https://github.com/zebrafishlabs/web-styleguide)**: An app for demonstrating and testing imgix UI components
-* **[`web-dashboard`](https://github.com/zebrafishlabs/web-dashboard)**: An app for customers to interact with their imgix account
-
-
 ## Appendix: Code-analysis
 
 This repository defines a set of code-analysis tools (linters) that should be used by all imgix web-projects to check code for correctness, consistency, and quality. These tools run during the build process and will alert you if you've written code that violates one of the linter's defined code-quality rules. These rules are defined by the `rc.*.json` ("run command") files in the `runcoms` directory.
