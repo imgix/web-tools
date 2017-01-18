@@ -229,9 +229,9 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
       if (_.isFunction(config.server.setup)) {
         app = config.server.setup(config);
       } else if (config.server.setup === 'spa') {
-        app = require('./serve-spa.js')(config);
+        app = require('./servers/server.spa.js')(config);
       } else if (config.server.setup === 'site') {
-        app = require('./serve-site.js')(config);
+        app = require('./servers/server.site.js')(config);
       } else {
         express = require('express');
         app = express();
