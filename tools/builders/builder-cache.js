@@ -2,9 +2,6 @@ module.exports = {
   js: function proxyBuildJS() {
       return require('./builders/builder.js.js').apply(null, arguments);
     },
-  templates: function proxyBuildTemplates() {
-      return require('./builders/builder.templates.js').apply(null, arguments);
-    },
   css: function proxyBuildCSS() {
       return require('./builders/builder.css.js').apply(null, arguments);
     },
