@@ -1,8 +1,8 @@
 var _ = require('lodash'),
     fs = require('fs'),
-    URI = require('uri.js'),
+    URI = require('uri-js'),
     runSequence = require('run-sequence'),
-    chromeLoad = require('./misc/chrome-load.js');
+    chromeLoad = require('../misc/chrome-load.js');
 
 module.exports = function setUpTasks(gulp) {
   var serverConfig = _.get(gulp, 'webToolsConfig.server'),
@@ -12,7 +12,7 @@ module.exports = function setUpTasks(gulp) {
     return;
   }
 
-  serverURL = URI(serverConfig).href();
+  serverURL = URI.serialize(serverConfig);
 
   runSequence.use(gulp);
 
@@ -42,15 +42,15 @@ module.exports = function setUpTasks(gulp) {
     }
 
     if (_.isFunction(serverConfig.setup)) {
-      app = serverConfig.setup(config);
+      app = serverConfig.setup(gulp.webToolsConfig);
     } else if (serverConfig.setup === 'spa') {
-      app = require('./servers/server.spa.js')(config);
+      app = require('../servers/server.spa.js')(gulp.webToolsConfig);
     } else if (serverConfig.setup === 'site') {
-      app = require('./servers/server.site.js')(config);
+      app = require('../servers/server.site.js')(gulp.webToolsConfig);
     } else {
       express = require('express');
       app = express();
-      app.use(express.static(config.destPath));
+      app.use(express.static(gulp.webToolsConfig.destPath));
     }
 
     if (serverConfig.ssl) {
@@ -62,7 +62,7 @@ module.exports = function setUpTasks(gulp) {
         rejectUnauthorized: false
       }, app);
     } else {
-      protocol = require('http')
+      protocol = require('http');
       serverConfig.instance = protocol.createServer(app);
     }
 
@@ -89,4 +89,4 @@ module.exports = function setUpTasks(gulp) {
     description: 'Reload existing Chrome tabs that are pointing to the local server, or open a new tab if none exists.',
     category: 'serve'
   });
-}
+};

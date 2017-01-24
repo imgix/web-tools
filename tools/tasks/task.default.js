@@ -17,4 +17,4 @@ module.exports = function setUpTask(gulp) {
     category: 'main',
     weight: 0
   });
-}
+};

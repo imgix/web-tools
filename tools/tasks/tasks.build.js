@@ -4,8 +4,8 @@ var _ = require('lodash'),
     runSequence = require('run-sequence'),
     clean = require('gulp-clean'),
     filter = require('gulp-filter'),
-    builders = require('./builders/builder-cache.js'),
-    streamCache = require('./misc/stream-cache.js');
+    builders = require('../builders/builder-cache.js'),
+    streamCache = require('../misc/stream-cache.js');
 
 module.exports = function setUpTasks(gulp) {
   var appAssets = _.get(gulp, 'webToolsConfig.appAssets'),
@@ -40,7 +40,7 @@ module.exports = function setUpTasks(gulp) {
 
   // Task to clean destination
   gulp.task('build-clean', function buildCleanTask() {
-    var destPath = _.get(config, 'webToolsConfig.destPath');
+    var destPath = _.get(gulp, 'webToolsConfig.destPath');
 
     if (destPath) {
       return gulp.src(destPath, {read: false})

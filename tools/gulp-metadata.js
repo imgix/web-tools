@@ -109,7 +109,7 @@ module.exports = {
           } else {
             originalTaskFunc.apply(this, arguments);
           }
-        }
+        };
       }
 
       return gulp;

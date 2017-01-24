@@ -1,12 +1,10 @@
-var _ = require('lodash'),
-    args = require('yargs').argv,
-    gulpMetadata = require('./gulp/gulp-metadata.js');
+var _ = require('lodash');
 
 module.exports = {
   applyTo: function (gulp) {
       var config = gulp.webToolsConfig;
 
-      if (_.isEmpty(config.appAssets) || _.isEmpty(config.extAssets)) {
+      if (!_.isEmpty(config.appAssets) || !_.isEmpty(config.extAssets)) {
         // Set up build tasks
         require('./tasks/tasks.build.js')(gulp);
 

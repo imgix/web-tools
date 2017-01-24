@@ -1,6 +1,6 @@
 var _ = require('lodash'),
     Q = require('q'),
-    runCommand = require('./misc/run-command.js');
+    runCommand = require('./run-command.js');
 
 module.exports = function chromeLoad(url) {
   // Check to see if the chrome-cli command exists

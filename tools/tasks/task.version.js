@@ -1,6 +1,6 @@
 var _ = require('lodash'),
     args = require('yargs').argv,
-    versionBump = require('./misc/version-bump.js');
+    versionBump = require('../misc/version-bump.js');
 
 module.exports = function setUpTask(gulp) {
   var versioningSrc = _.get(gulp, 'webToolsConfig.versioning.src');
@@ -20,4 +20,4 @@ module.exports = function setUpTask(gulp) {
         'bump': '[Optional] Specifies which part of the version number (major, minor, patch) should be bumped.'
       }
   });
-}
+};
