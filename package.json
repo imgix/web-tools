@@ -5,6 +5,7 @@
   "license": "BSD",
   "repository": "zebrafishlabs/web-tools",
   "//": "Fixing socket.io version number to 1.3.7 because https://github.com/karma-runner/karma/issues/1788",
+  "main": "tools/web-tools.js",
   "dependencies": {
     "autoprefixer": "6.3.3",
     "bower": "1.7.7",
