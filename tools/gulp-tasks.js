@@ -32,11 +32,6 @@ module.exports = function setupGulpTasks(gulp, configFactory) {
     require('./tasks/task.test-unit.js')(gulp);
   }
 
-  if (!!config.integrationTests) {
-    // Set up integration-test task
-    require('./tasks/task.test-integration.js')(gulp);
-  }
-
   require('./tasks/task.default.js')(gulp);
   require('./tasks/task.help.js')(gulp);
 
