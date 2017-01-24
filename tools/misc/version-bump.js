@@ -1,5 +1,4 @@
 var _ = require('lodash'),
-    path = require('path'),
     through = require('through2'),
     semver = require('semver'),
     gutil = require('gulp-util');

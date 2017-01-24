@@ -1,8 +1,9 @@
 var _ = require('lodash'),
+    args = require('yargs').argv,
     combine = require('stream-combiner'),
     loadGulpPlugins = require('gulp-load-plugins');
 
-module.exports = function argFilter(args) {
+module.exports = function argFilter() {
   var gulpPlugins = loadGulpPlugins(),
       regexen,
       pipeline = [];
