@@ -10,6 +10,7 @@ module.exports = {
       // Get config based on the arguments given
       gulp.webToolsConfig = configFactory(runningTask, args);
 
+      // Apply gulp enhancements
       metadata.applyTo(gulp);
       tasks.applyTo(gulp);
 

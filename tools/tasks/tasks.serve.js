@@ -5,14 +5,19 @@ var _ = require('lodash'),
     chromeLoad = require('../misc/chrome-load.js');
 
 module.exports = function setUpTasks(gulp) {
-  var serverConfig = _.get(gulp, 'webToolsConfig.server'),
-      serverURL;
+  var serverConfig = _.get(gulp, 'webToolsConfig.server');
 
   if (!serverConfig) {
     return;
   }
 
-  serverURL = URI.serialize(serverConfig);
+  if (!serverConfig.fullURL) {
+    serverConfig.fullURL = URI.serialize({
+      scheme: serverConfig.ssl ? 'https' : 'http',
+      host: serverConfig.hostname || 'localhost',
+      port: serverConfig.port || 9000
+    });
+  }
 
   runSequence = runSequence.use(gulp);
 
@@ -84,7 +89,7 @@ module.exports = function setUpTasks(gulp) {
   });
 
   gulp.task('serve-load', function serveLoadTask() {
-    return chromeLoad(serverURL);
+    return chromeLoad(serverConfig.fullURL);
   }, {
     description: 'Reload existing Chrome tabs that are pointing to the local server, or open a new tab if none exists.',
     category: 'serve'
