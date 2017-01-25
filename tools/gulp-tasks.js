@@ -2,9 +2,7 @@ var _ = require('lodash');
 
 module.exports = {
   applyTo: function (gulp) {
-      var config = gulp.webToolsConfig;
-
-      if (!_.isEmpty(config.appAssets) || !_.isEmpty(config.extAssets)) {
+      if (_.has(gulp, 'webToolsConfig.appAssets') || _.has(gulp, 'webToolsConfig.extAssets')) {
         // Set up build tasks
         require('./tasks/tasks.build.js')(gulp);
 
@@ -12,7 +10,7 @@ module.exports = {
         require('./tasks/tasks.watch.js')(gulp);
       }
 
-      if (!!config.server) {
+      if (!!_.has(gulp, 'webToolsConfig.server')) {
         // Set up serve tasks
         require('./tasks/tasks.serve.js')(gulp);
       }
@@ -20,7 +18,7 @@ module.exports = {
       require('./tasks/task.default.js')(gulp);
       require('./tasks/task.help.js')(gulp);
 
-      if (config.versioning) {
+      if (_.has(gulp, 'webToolsConfig.versioning')) {
         require('./tasks/task.version.js')(gulp);
       }
 
