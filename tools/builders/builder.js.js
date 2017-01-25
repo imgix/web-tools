@@ -30,7 +30,7 @@ module.exports = function buildJS(options) {
     // Checking pipeline
     options.doCheck && gulpPlugins.jshint(_.merge(
         {lookup: false},
-        require('../runcoms/rc.jshint.json')
+        require('../../runcoms/rc.jshint.json')
       )),
     options.doCheck && gulpPlugins.jshint.reporter(jshintReporter),
     options.doCheck && gulpPlugins.jscs({

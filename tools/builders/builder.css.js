@@ -74,7 +74,7 @@ module.exports = function buildCSS(options) {
       },
     pluginOptions: {
         stylelint: {
-            rules: require('../runcoms/rc.stylelint.json')
+            rules: require('../../runcoms/rc.stylelint.json')
           },
         'postcss-import': {
             plugins: [
