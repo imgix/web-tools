@@ -18,7 +18,7 @@ module.exports = function setUpTasks(gulp) {
     return;
   }
 
-  runSequence.use(gulp);
+  runSequence = runSequence.use(gulp);
 
   // Main build task:
   gulp.task('build', function buildTask(done) {

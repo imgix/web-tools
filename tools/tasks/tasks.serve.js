@@ -14,7 +14,7 @@ module.exports = function setUpTasks(gulp) {
 
   serverURL = URI.serialize(serverConfig);
 
-  runSequence.use(gulp);
+  runSequence = runSequence.use(gulp);
 
   // Main serve task:
   gulp.task('serve', function serveTask(done) {

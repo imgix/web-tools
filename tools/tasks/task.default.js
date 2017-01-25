@@ -2,7 +2,7 @@ var _ = require('lodash'),
     runSequence = require('run-sequence');
 
 module.exports = function setUpTask(gulp) {
-  runSequence.use(gulp);
+  runSequence = runSequence.use(gulp);
 
   gulp.task('default', function defaultTask(done) {
     var mainTasks = _.compact([

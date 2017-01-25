@@ -13,7 +13,7 @@ module.exports = function setUpTasks(gulp) {
     return;
   }
 
-  runSequence.use(gulp);
+  runSequence = runSequence.use(gulp);
 
   // Main watch task:
   gulp.task('watch', function watchTask(done) {
