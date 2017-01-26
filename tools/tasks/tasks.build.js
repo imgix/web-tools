@@ -4,8 +4,7 @@ var _ = require('lodash'),
     runSequence = require('run-sequence'),
     clean = require('gulp-clean'),
     filter = require('gulp-filter'),
-    builders = require('../builders/builder-cache.js'),
-    streamCache = require('../misc/stream-cache.js');
+    builders = require('../builders/builder-cache.js');
 
 module.exports = function setUpTasks(gulp) {
   var appAssets = _.get(gulp, 'webToolsConfig.appAssets'),
@@ -91,10 +90,10 @@ module.exports = function setUpTasks(gulp) {
           assetDependencyStreams = {};
 
           _.each(appAssetDependencies.concat(extAssetDependencies), function getStream(name) {
-            var stream = streamCache.get(name);
+            var stream = gulp.streamCache.get(name);
 
             if (!!stream) {
-              assetDependencyStreams[name] = streamCache.get(name);
+              assetDependencyStreams[name] = stream;
             }
           });
         }
@@ -110,7 +109,7 @@ module.exports = function setUpTasks(gulp) {
         pipeline = combine(_.compact([
           assetOptions.build && builder && builder(assetOptions.buildOptions, assetDependencyStreams),
           assetOptions.dest && gulp.dest(assetOptions.dest),
-          streamCache.put('app-' + assetType)
+          gulp.streamCache.put('app-' + assetType)
         ]));
 
         return gulp.src(assetOptions.src).pipe(pipeline);
@@ -151,7 +150,7 @@ module.exports = function setUpTasks(gulp) {
           filter(assetOptions.filter || '**/*.' + assetType),
           assetOptions.build && !!builders[assetType] && builders[assetType](assetOptions.buildOptions),
           assetOptions.dest && gulp.dest(assetOptions.dest),
-          streamCache.put('ext-' + assetType)
+          gulp.streamCache.put('ext-' + assetType)
         ]));
 
         return gulp.src(extFiles).pipe(pipeline);

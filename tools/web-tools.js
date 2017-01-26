@@ -1,7 +1,8 @@
 var _ = require('lodash'),
     args = require('yargs').argv,
     metadata = require('./gulp-metadata.js'),
-    tasks = require('./gulp-tasks.js');
+    tasks = require('./gulp-tasks.js'),
+    StreamCache = require('./misc/stream-cache.js');
 
 module.exports = {
   applyTo: function (gulp, configFactory, plugins) {
@@ -9,6 +10,9 @@ module.exports = {
 
       // Get config based on the arguments given
       gulp.webToolsConfig = configFactory(runningTask, args);
+
+      // Create a StreamCache on this instance, to help save some time down the road
+      gulp.streamCache = new StreamCache();
 
       // Apply gulp enhancements
       metadata.applyTo(gulp);
