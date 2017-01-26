@@ -1,6 +1,6 @@
 {
   "name": "web-tools",
-  "version": "7.0.0",
+  "version": "7.1.0",
   "description": "Repository for tools and configurations common to all imgix web projects",
   "repository": {
     "type": "git",
