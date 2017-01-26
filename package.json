@@ -2,8 +2,12 @@
   "name": "web-tools",
   "version": "7.0.0",
   "description": "Repository for tools and configurations common to all imgix web projects",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imgix/web-tools"
+  },
+  "author": "imgix",
   "license": "BSD",
-  "repository": "zebrafishlabs/web-tools",
   "main": "tools/web-tools.js",
   "dependencies": {
     "autoprefixer": "6.3.3",
