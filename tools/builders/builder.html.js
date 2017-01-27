@@ -68,7 +68,7 @@ module.exports = function buildHTML(options, injectableStreams) {
   return combine(_.compact([
     // Checking pipeline
     options.doCheck && gulpPlugins.htmlhint({
-        htmlhintrc: path.join(__dirname, '..', 'runcoms', 'rc.htmlhint.json')
+        htmlhintrc: path.join(__dirname, '..', '..', 'runcoms', 'rc.htmlhint.json')
       }),
     options.doCheck && gulpPlugins.htmlhint.reporter(htmlhintReporter),
 
