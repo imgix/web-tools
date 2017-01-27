@@ -34,7 +34,7 @@ module.exports = function buildJS(options) {
       )),
     options.doCheck && gulpPlugins.jshint.reporter(jshintReporter),
     options.doCheck && gulpPlugins.jscs({
-        configPath: path.join(__dirname, '..', 'runcoms', 'rc.jscs.json')
+        configPath: path.join(__dirname, '..', '..', 'runcoms', 'rc.jscs.json')
       }),
     options.doCheck && gulpPlugins.jscs.reporter(jscsReporter.path),
 
