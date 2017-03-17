@@ -37,7 +37,7 @@ module.exports = function buildHTML(options, injectableStreams) {
       return file.contents.toString();
 
     // Use the default transform as fallback
-    } else {
+    } else if (ext !== '.map') {
       return gulpPlugins.inject.transform.apply(gulpPlugins.inject.transform, arguments);
     }
   }
