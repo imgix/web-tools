@@ -25,7 +25,10 @@ module.exports = function buildHTML(options, injectableStreams) {
 
     // For SVG files, return the whole file minus xml and doctype declarations
     if (ext === '.svg') {
-      $ = cheerio.load(file.contents.toString());
+      $ = cheerio.load(file.contents.toString(), {
+        xmlMode: true
+      });
+
       $('svg').addClass('refs');
       return $.xml();
 
