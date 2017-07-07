@@ -2,7 +2,7 @@ var _ = require('lodash'),
     express = require('express'),
     STATIC_CACHE_AGE = 365 * 24 * 60 * 60 * 1000; // 1 year;
 
-module.exports = function confgureServer(config, app) {
+module.exports = function configureServer(config, app) {
   var app = app || express();
 
   function serveIndex(request, response) {
