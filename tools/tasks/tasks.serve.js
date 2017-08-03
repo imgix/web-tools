@@ -11,14 +11,6 @@ module.exports = function setUpTasks(gulp) {
     return;
   }
 
-  if (!serverConfig.fullURL) {
-    serverConfig.fullURL = URI.serialize({
-      scheme: serverConfig.ssl ? 'https' : 'http',
-      host: serverConfig.hostname || 'localhost',
-      port: serverConfig.port || 9000
-    });
-  }
-
   runSequence = runSequence.use(gulp);
 
   // Main serve task:
@@ -89,7 +81,17 @@ module.exports = function setUpTasks(gulp) {
   });
 
   gulp.task('serve-load', function serveLoadTask() {
-    return chromeLoad(serverConfig.fullURL);
+    var loadURL = serverConfig.loadURL;
+
+    if (!loadURL) {
+      loadURL = URI.serialize({
+        scheme: serverConfig.ssl ? 'https' : 'http',
+        host: serverConfig.hostname || 'localhost',
+        port: serverConfig.port || 9000
+      });
+    }
+
+    return chromeLoad(loadURL);
   }, {
     description: 'Reload existing Chrome tabs that are pointing to the local server, or open a new tab if none exists.',
     category: 'serve'
