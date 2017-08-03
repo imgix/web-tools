@@ -14,6 +14,10 @@ module.exports = function configureServer(config, app) {
     });
   }
 
+  if (_.get(config, 'server.options.logs')) {
+    app.use(require('morgan')('dev'));
+  }
+
   if (_.get(config, 'server.options.gzip')) {
     app.use(require('compression')());
   }

@@ -45,6 +45,7 @@
     "log-symbols": "1.0.2",
     "lost": "8.0.0",
     "main-bower-files": "2.13.1",
+    "morgan": "^1.8.2",
     "postcss-calc": "5.3.1",
     "postcss-clearfix": "1.0.0",
     "postcss-color-function": "3.0.0",
