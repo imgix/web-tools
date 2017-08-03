@@ -30,7 +30,7 @@ module.exports = function setUpTasks(gulp) {
     );
   }, {
     description: 'Start a local server for this project and view it in Chrome.',
-    notes: ['The task will finish once the server has started, but the server will run in the background until the `stop-server` task is called.'],
+    notes: ['The task will finish once the server has started, but the server will run in the background until the `serve-stop` task is called.'],
     category: 'main',
     weight: 2
   });
@@ -74,7 +74,7 @@ module.exports = function setUpTasks(gulp) {
     serverConfig.instance.listen(serverConfig.port, done);
   }, {
     description: 'Start a local server for this project.',
-    notes: ['The task will finish once the server has started, but the server will run in the background until the `stop-server` task is called.'],
+    notes: ['The task will finish once the server has started, but the server will run in the background until the `serve-stop` task is called.'],
     category: 'serve'
   });
 
