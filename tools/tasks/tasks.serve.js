@@ -11,14 +11,6 @@ module.exports = function setUpTasks(gulp) {
     return;
   }
 
-  if (!serverConfig.fullURL) {
-    serverConfig.fullURL = URI.serialize({
-      scheme: serverConfig.ssl ? 'https' : 'http',
-      host: serverConfig.hostname || 'localhost',
-      port: serverConfig.port || 9000
-    });
-  }
-
   runSequence = runSequence.use(gulp);
 
   // Main serve task:
@@ -30,7 +22,7 @@ module.exports = function setUpTasks(gulp) {
     );
   }, {
     description: 'Start a local server for this project and view it in Chrome.',
-    notes: ['The task will finish once the server has started, but the server will run in the background until the `stop-server` task is called.'],
+    notes: ['The task will finish once the server has started, but the server will run in the background until the `serve-stop` task is called.'],
     category: 'main',
     weight: 2
   });
@@ -74,7 +66,7 @@ module.exports = function setUpTasks(gulp) {
     serverConfig.instance.listen(serverConfig.port, done);
   }, {
     description: 'Start a local server for this project.',
-    notes: ['The task will finish once the server has started, but the server will run in the background until the `stop-server` task is called.'],
+    notes: ['The task will finish once the server has started, but the server will run in the background until the `serve-stop` task is called.'],
     category: 'serve'
   });
 
@@ -89,7 +81,17 @@ module.exports = function setUpTasks(gulp) {
   });
 
   gulp.task('serve-load', function serveLoadTask() {
-    return chromeLoad(serverConfig.fullURL);
+    var loadURL = serverConfig.loadURL;
+
+    if (!loadURL) {
+      loadURL = URI.serialize({
+        scheme: serverConfig.ssl ? 'https' : 'http',
+        host: serverConfig.hostname || 'localhost',
+        port: serverConfig.port || 9000
+      });
+    }
+
+    return chromeLoad(loadURL);
   }, {
     description: 'Reload existing Chrome tabs that are pointing to the local server, or open a new tab if none exists.',
     category: 'serve'
