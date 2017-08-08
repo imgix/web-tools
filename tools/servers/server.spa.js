@@ -22,15 +22,8 @@ module.exports = function configureServer(config, app) {
     app.use(require('compression')());
   }
 
-  app.use(function checkForIndex(request, response, next) {
-    var isIndex = request.url.match(/index\.html$/);
-
-    if (isIndex) {
-      serveIndex(request, response);
-    } else {
-      next();
-    }
-  });
+  // Catch direct requests to index.html first, so they aren't served statically
+  app.get(/index\.html$/, serveIndex);
 
   // Serve static assets
   app.use(express.static(config.destPath, {
