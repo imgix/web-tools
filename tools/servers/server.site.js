@@ -1,8 +1,8 @@
 var _ = require('lodash'),
     express = require('express');
 
-module.exports = function confgureServer(config) {
-  var app = express();
+module.exports = function confgureServer(config, app) {
+  var app = app || express();
 
   if (_.get(config, 'server.options.logs')) {
     app.use(require('morgan')('dev'));
