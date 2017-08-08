@@ -4,6 +4,10 @@ var _ = require('lodash'),
 module.exports = function confgureServer(config) {
   var app = express();
 
+  if (_.get(config, 'server.options.logs')) {
+    app.use(require('morgan')('dev'));
+  }
+
   if (_.get(config, 'server.options.gzip')) {
     app.use(require('compression')());
   }
