@@ -9,7 +9,7 @@ module.exports = function configureServer(config, app) {
     return response.sendFile('index.html', {
       root: config.appAssets.html.dest,
       headers: {
-          'Cache-Control': 'private'
+          'Cache-Control': 'private, no-cache, max-age=0'
         }
     });
   }
