@@ -6,6 +6,7 @@ module.exports = function buildSVG(options) {
   var gulpPlugins = loadGulpPlugins();
 
   options = _.defaults({}, options, {
+    doProcessing: true,
     doMinify: false,
 
     concatName: 'override_me.svg',
@@ -29,9 +30,9 @@ module.exports = function buildSVG(options) {
   });
 
   return combine(_.compact([
-    // Processing pipeline
-    gulpPlugins.svgstore(options.svgStoreOptions),
-    gulpPlugins.rename(options.concatName),
+    // Processing pipeline (concat all files and store as symbols, for inclusion in HTML body)
+    options.doProcessing && gulpPlugins.svgstore(options.svgStoreOptions),
+    options.doProcessing && gulpPlugins.rename(options.concatName),
 
     // Productionization pipeline
     options.doMinify && gulpPlugins.svgmin(options.svgMinOptions),
