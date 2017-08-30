@@ -2,28 +2,25 @@ var _ = require('lodash'),
     express = require('express'),
     STATIC_CACHE_AGE = 365 * 24 * 60 * 60 * 1000; // 1 year;
 
-module.exports = function configureServer(config, app) {
-  var app = app || express();
-
+module.exports = function configureServer(app, config) {
   function serveIndex(request, response) {
     return response.sendFile('index.html', {
       root: config.appAssets.html.dest,
       headers: {
-          'Cache-Control': 'private, no-cache, max-age=0'
+          'Cache-Control': 'private'
         }
     });
   }
 
-  if (_.get(config, 'server.options.logs')) {
-    app.use(require('morgan')('dev'));
-  }
+  app.use(function checkForIndex(request, response, next) {
+    var isIndex = request.url.match(/index\.html$/);
 
-  if (_.get(config, 'server.options.gzip')) {
-    app.use(require('compression')());
-  }
-
-  // Catch direct requests to index.html first, so they aren't served statically
-  app.get(/index\.html$/, serveIndex);
+    if (isIndex) {
+      serveIndex(request, response);
+    } else {
+      next();
+    }
+  });
 
   // Serve static assets
   app.use(express.static(config.destPath, {
