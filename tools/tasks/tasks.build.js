@@ -3,8 +3,7 @@ var _ = require('lodash'),
     mainBowerFiles = require('main-bower-files'),
     runSequence = require('run-sequence'),
     clean = require('gulp-clean'),
-    filter = require('gulp-filter'),
-    builders = require('../builders/builder-cache.js');
+    filter = require('gulp-filter');
 
 module.exports = function setUpTasks(gulp) {
   var appAssets = _.get(gulp, 'webToolsConfig.appAssets'),
@@ -83,8 +82,8 @@ module.exports = function setUpTasks(gulp) {
 
       gulp.task('build-app-' + assetType, taskDependencies, function task() {
         var assetDependencyStreams,
-            builder,
-            pipeline;
+            assetStreams,
+            fullPipeline;
 
         if (taskDependencies.length) {
           assetDependencyStreams = {};
@@ -98,21 +97,33 @@ module.exports = function setUpTasks(gulp) {
           });
         }
 
-        if (!assetOptions.builder) {
-          builder = builders[assetType];
-        } else if (_.isFunction(assetOptions.builder)) {
-          builder = assetOptions.builder;
-        } else {
-          builder = builders[assetOptions.builder];
-        }
+        assetStreams = _.map(assetOptions.pipelines || [], function getStream(settings) {
+          var pipeline;
 
-        pipeline = combine(_.compact([
-          assetOptions.build && builder && builder(assetOptions.buildOptions, assetDependencyStreams),
-          assetOptions.dest && gulp.dest(assetOptions.dest),
-          gulp.streamCache.put('app-' + assetType)
-        ]));
+          if (_.isFunction(settings.pipeline)) {
+            pipeline = settings.pipeline(gulp);
+          } else if (_.isString(settings.pipeline)) {
+            pipeline = gulp.pipelineCache.get(settings.pipeline);
+          }
 
-        return gulp.src(assetOptions.src).pipe(pipeline);
+          if (!_.isFunction(pipeline)) {
+            return;
+          }
+
+          return pipeline(settings.options || {}, assetDependencyStreams);
+        });
+
+        fullPipeline = combine(
+          _.chain(assetStreams)
+            .concat([
+                assetOptions.dest && gulp.dest(assetOptions.dest),
+                gulp.streamCache.put('app-' + assetType)
+              ])
+            .compact()
+            .value()
+        );
+
+        return gulp.src(assetOptions.src).pipe(fullPipeline);
       }, {
         description: 'Process and/or move local "' + assetType + '" assets to this project\'s destination directory',
         category: 'build'
@@ -146,14 +157,36 @@ module.exports = function setUpTasks(gulp) {
     // Set up build task for each ext asset type
     _.each(extAssets, function addExtBuildTask(assetOptions, assetType) {
       gulp.task('build-ext-' + assetType, function task() {
-        var pipeline = combine(_.compact([
-          filter(assetOptions.filter || '**/*.' + assetType),
-          assetOptions.build && !!builders[assetType] && builders[assetType](assetOptions.buildOptions),
-          assetOptions.dest && gulp.dest(assetOptions.dest),
-          gulp.streamCache.put('ext-' + assetType)
-        ]));
+        var assetStreams,
+            fullPipeline;
 
-        return gulp.src(extFiles).pipe(pipeline);
+        assetStreams = _.map(assetOptions.pipelines || [], function getStream(settings) {
+          var pipeline;
+
+          if (_.isFunction(settings.pipeline)) {
+            pipeline = settings.pipeline;
+          } else if (_.isString(settings.pipeline)) {
+            pipeline = gulp.pipelineCache.get(settings.pipeline);
+          } else {
+            return;
+          }
+
+          return pipeline(settings.options || {}, assetDependencyStreams);
+        });
+
+        fullPipeline = combine(
+          _.chain(filter(assetOptions.filter || '**/*.' + assetType))
+            .concat([
+                assetStreams,
+                assetOptions.dest && gulp.dest(assetOptions.dest),
+                gulp.streamCache.put('ext-' + assetType)
+              ])
+            .flatten()
+            .compact()
+            .value()
+        );
+
+        return gulp.src(extFiles).pipe(fullPipeline);
       }, {
         description: 'Process and/or move external "' + assetType + '" assets to this project\'s destination directory',
         category: 'build'

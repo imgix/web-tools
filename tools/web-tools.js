@@ -2,7 +2,8 @@ var _ = require('lodash'),
     args = require('yargs').argv,
     metadata = require('./gulp-metadata.js'),
     tasks = require('./gulp-tasks.js'),
-    StreamCache = require('./misc/stream-cache.js');
+    StreamCache = require('./misc/stream-cache.js')
+    PipelineCache = require('./misc/pipeline-cache.js');;
 
 module.exports = {
   applyTo: function (gulp, configFactory, plugins) {
@@ -13,6 +14,15 @@ module.exports = {
 
       // Create a StreamCache on this instance, to help save some time down the road
       gulp.streamCache = new StreamCache();
+
+      // Create a PipelineCache on this instance, to store pipelines
+      gulp.pipelineCache = new PipelineCache(gulp);
+
+      // Add the default pipelines to the cache
+      gulp.pipelineCache.put('html', '../pipelines/pipeline.html.js');
+      gulp.pipelineCache.put('css', '../pipelines/pipeline.css.js');
+      gulp.pipelineCache.put('js', '../pipelines/pipeline.js.js');
+      gulp.pipelineCache.put('svg', '../pipelines/pipeline.svg.js');
 
       // Apply gulp enhancements
       metadata.applyTo(gulp);
