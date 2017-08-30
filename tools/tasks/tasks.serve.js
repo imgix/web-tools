@@ -28,8 +28,9 @@ module.exports = function setUpTasks(gulp) {
   });
 
   gulp.task('serve-start', function serveStartTask(done) {
-    var app,
-        express,
+    var express,
+        app,
+        middlewareStack,
         protocol;
 
     // If the server is already running, no need to do anything
@@ -38,17 +39,33 @@ module.exports = function setUpTasks(gulp) {
       return;
     }
 
-    if (_.isFunction(serverConfig.setup)) {
-      app = serverConfig.setup(gulp.webToolsConfig);
-    } else if (serverConfig.setup === 'spa') {
-      app = require('../servers/server.spa.js')(gulp.webToolsConfig);
-    } else if (serverConfig.setup === 'site') {
-      app = require('../servers/server.site.js')(gulp.webToolsConfig);
-    } else {
-      express = require('express');
-      app = express();
-      app.use(express.static(gulp.webToolsConfig.destPath));
+    express = require('express');
+    app = express();
+
+    // Add logging via Morgan middleware
+    if (_.get(serverConfig, 'options.logs')) {
+      app.use(require('morgan')());
     }
+
+    // Add gzipping via compression middleware
+    if (_.get(serverConfig, 'options.gzip')) {
+      app.use(require('compression')());
+    }
+
+    middlewareStack = _.castArray(serverConfig.middleware || function (app, config) {
+      app.use(express.static(config.destPath));
+    });
+
+    // Apply each middleware in the stack, in order
+    _.each(middlewareStack, function applyMiddleware(middleware) {
+      if (_.isString(middleware)) {
+        middleware = gulp.middlewareCache.get(middleware);
+      }
+
+      if (_.isFunction(middleware)) {
+        middleware(app, gulp.webToolsConfig);
+      }
+    });
 
     if (serverConfig.ssl) {
       protocol = require('https');

@@ -2,8 +2,9 @@ var _ = require('lodash'),
     args = require('yargs').argv,
     metadata = require('./gulp-metadata.js'),
     tasks = require('./gulp-tasks.js'),
-    StreamCache = require('./misc/stream-cache.js')
-    PipelineCache = require('./misc/pipeline-cache.js');;
+    StreamCache = require('./misc/stream-cache.js'),
+    PipelineCache = require('./misc/pipeline-cache.js'),
+    MiddlewareCache = require('./misc/middleware-cache.js');
 
 module.exports = {
   applyTo: function (gulp, configFactory, plugins) {
@@ -23,6 +24,13 @@ module.exports = {
       gulp.pipelineCache.put('css', '../pipelines/pipeline.css.js');
       gulp.pipelineCache.put('js', '../pipelines/pipeline.js.js');
       gulp.pipelineCache.put('svg', '../pipelines/pipeline.svg.js');
+
+      // Create a MiddlewareCache on this instance, to store server middleware
+      gulp.middlewareCache = new MiddlewareCache();
+
+      // Add the default middleware to the cache
+      gulp.middlewareCache.put('simple-site', '../middleware/middleware.simple-site.js');
+      gulp.middlewareCache.put('single-page-app', '../middleware/middleware.single-page-app.js');
 
       // Apply gulp enhancements
       metadata.applyTo(gulp);
