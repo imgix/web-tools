@@ -21,8 +21,8 @@ module.exports = function setUpTasks(gulp) {
   // Main build task:
   gulp.task('build', function buildTask(done) {
     var buildTasks = _.compact([
-      !_.isEmpty(appAssets) && 'build-app',
-      !_.isEmpty(extAssets) && 'build-ext'
+      hasAppAssets && 'build-app',
+      hasExtAssets && 'build-ext'
     ]);
 
     runSequence(
