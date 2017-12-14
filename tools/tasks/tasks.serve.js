@@ -137,6 +137,10 @@ module.exports = function setUpTasks(gulp) {
   gulp.task('serve-load', function serveLoadTask() {
     var loadURL = serverConfig.loadURL;
 
+    if (!_.has(serverConfig, 'running')) {
+      return;
+    }
+
     if (!loadURL) {
       loadURL = URI.serialize({
         scheme: serverConfig.ssl ? 'https' : 'http',
