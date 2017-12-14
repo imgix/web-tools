@@ -7,6 +7,7 @@ module.exports = function setUpTasks(gulp) {
       extAssets = _.get(gulp, 'webToolsConfig.extAssets'),
       hasAppAssets = !_.isEmpty(appAssets),
       hasExtAssets = !_.isEmpty(extAssets),
+      postBuildTasks,
       extFiles;
 
   if (!hasAppAssets && !hasExtAssets) {
@@ -14,6 +15,16 @@ module.exports = function setUpTasks(gulp) {
   }
 
   runSequence = runSequence.use(gulp);
+
+  function getPostBuildTasks() {
+    return _.chain(gulp)
+      .get('webToolsConfig.watchOptions.afterBuild', ['serve-load'])
+      .castArray()
+      .filter(function checkValidity(onChangeTask) {
+          return _.has(gulp.tasks, onChangeTask);
+        })
+      .value();
+  }
 
   // Main watch task:
   gulp.task('watch', function watchTask(done) {
@@ -36,7 +47,7 @@ module.exports = function setUpTasks(gulp) {
       _.each(appAssets, function addAppWatcher(assetOptions, assetType) {
         gulp.watch(assetOptions.src, function onChange() {
           var tasks = [],
-              buildTasks = ['build-app-' + assetType];
+              buildTask = 'build-app-' + assetType;
 
           // Queue a build for any other assets that are dependent on this one
           _.each(appAssets, function examineAppDependencies(dependentAssetOptions, dependentAssetType) {
@@ -45,13 +56,7 @@ module.exports = function setUpTasks(gulp) {
             }
           });
 
-          tasks.push(buildTasks);
-
-          if (_.has(gulp, 'tasks["serve-load"]') && _.has(gulp, 'webToolsConfig.server.running')) {
-            tasks.push('serve-load');
-          }
-
-          runSequence.apply(null, tasks);
+          _.spread(runSequence)(_.concat(tasks, buildTask, getPostBuildTasks()));
         });
       });
     }, {
@@ -73,7 +78,7 @@ module.exports = function setUpTasks(gulp) {
       // Pass follow:true here to ensure symlinks are followed (for `bower link`ed components)
       gulp.watch(extFiles, {follow: true}, function onChange() {
         var tasks = [],
-            buildTasks = ['build-ext'];
+            buildTask = 'build-ext';
 
         // Queue a build for any app assets that have ext dependencies
         _.each(appAssets, function examineAppDependencies(dependentAssetOptions, dependentAssetType) {
@@ -82,13 +87,7 @@ module.exports = function setUpTasks(gulp) {
           }
         });
 
-        tasks.push(buildTasks);
-
-        if (_.has(gulp, 'tasks["serve-load"]') && _.has(gulp, 'webToolsConfig.server.running')) {
-          tasks.push('serve-load');
-        }
-
-        runSequence.apply(null, tasks);
+        _.spread(runSequence)(_.concat(tasks, buildTask, getPostBuildTasks()));
       });
     }, {
       description: 'Watch external assets and automatically build and reload the browser when a change is made.',
