@@ -85,6 +85,30 @@ module.exports = function setUpTasks(gulp) {
 
     serverConfig.running.server = server;
 
+    // Allow server to be destroyed
+    server._connectionMap = {};
+
+    server.on('connection', function onConnection(connection) {
+      var th = this,
+          key = connection.remoteAddress + ':' + connection.remotePort;
+
+      th._connectionMap[key] = connection;
+
+      connection.once('close', function onClose() {
+        delete th._connectionMap[key];
+      });
+    }.bind(server));
+
+    server.destroy = function () {
+      var th = this;
+
+      return new Promise(function constructPromise(resolve) {
+        th.close(resolve);
+
+        _.invokeMap(th._connectionMap, 'destroy');
+      });
+    }.bind(server);
+
     server.listen(serverConfig.port, done);
   }, {
     description: 'Start a local server for this project.',
@@ -99,7 +123,9 @@ module.exports = function setUpTasks(gulp) {
       delete serverConfig.running;
 
       promises = _.map(running, function shutdownService(service, serviceName) {
-        return Promise.resolve(_.isFunction(server.close) ? server.close() : undefined);
+        var closeFunction = service.destroy || service.close || undefined;
+
+        return Promise.resolve(_.isFunction(closeFunction) ? closeFunction.call(service) : undefined);
       });
 
     return Promise.all(promises);
