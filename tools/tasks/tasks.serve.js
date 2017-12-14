@@ -31,16 +31,19 @@ module.exports = function setUpTasks(gulp) {
     var express,
         app,
         middlewareStack,
-        protocol;
+        protocol,
+        server;
 
     // If the server is already running, no need to do anything
-    if (serverConfig.instance) {
+    if (serverConfig.running) {
       done();
       return;
+    } else {
+      serverConfig.running = {};
     }
 
     express = require('express');
-    app = express();
+    app = serverConfig.running.app = express();
 
     // Add logging via Morgan middleware
     if (_.get(serverConfig, 'options.logs')) {
@@ -69,7 +72,7 @@ module.exports = function setUpTasks(gulp) {
 
     if (serverConfig.ssl) {
       protocol = require('https');
-      serverConfig.instance = protocol.createServer({
+      server = protocol.createServer({
         key: fs.readFileSync(serverConfig.key),
         cert: fs.readFileSync(serverConfig.cert),
         requestCert: false,
@@ -77,10 +80,12 @@ module.exports = function setUpTasks(gulp) {
       }, app);
     } else {
       protocol = require('http');
-      serverConfig.instance = protocol.createServer(app);
+      server = protocol.createServer(app);
     }
 
-    serverConfig.instance.listen(serverConfig.port, done);
+    serverConfig.running.server = server;
+
+    server.listen(serverConfig.port, done);
   }, {
     description: 'Start a local server for this project.',
     notes: ['The task will finish once the server has started, but the server will run in the background until the `serve-stop` task is called.'],
@@ -88,12 +93,18 @@ module.exports = function setUpTasks(gulp) {
   });
 
   gulp.task('serve-stop', function serveStopTask() {
-    if (!!serverConfig.instance) {
-      serverConfig.instance.close();
-      delete serverConfig.instance;
-    }
+    var running = serverConfig.running,
+        promises;
+
+      delete serverConfig.running;
+
+      promises = _.map(running, function shutdownService(service, serviceName) {
+        return Promise.resolve(_.isFunction(server.close) ? server.close() : undefined);
+      });
+
+    return Promise.all(promises);
   }, {
-    description: 'Shut down the local server for this project, if it\'s running.',
+    description: 'Shut down local services for this project, if there\'s anything running.',
     category: 'serve'
   });
 

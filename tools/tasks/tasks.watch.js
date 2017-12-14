@@ -47,7 +47,7 @@ module.exports = function setUpTasks(gulp) {
 
           tasks.push(buildTasks);
 
-          if (_.has(gulp, 'tasks["serve-load"]') && _.has(gulp, 'webToolsConfig.server.instance')) {
+          if (_.has(gulp, 'tasks["serve-load"]') && _.has(gulp, 'webToolsConfig.server.running')) {
             tasks.push('serve-load');
           }
 
@@ -84,7 +84,7 @@ module.exports = function setUpTasks(gulp) {
 
         tasks.push(buildTasks);
 
-        if (_.has(gulp, 'tasks["serve-load"]') && _.has(gulp, 'webToolsConfig.server.instance')) {
+        if (_.has(gulp, 'tasks["serve-load"]') && _.has(gulp, 'webToolsConfig.server.running')) {
           tasks.push('serve-load');
         }
 
