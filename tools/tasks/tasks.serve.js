@@ -1,6 +1,6 @@
 var _ = require('lodash'),
     fs = require('fs'),
-    URI = require('uri-js'),
+    URI = require('urijs'),
     runSequence = require('run-sequence'),
     chromeLoad = require('../misc/chrome-load.js');
 
@@ -138,9 +138,9 @@ module.exports = function setUpTasks(gulp) {
     }
 
     if (!loadURL) {
-      loadURL = URI.serialize({
-        scheme: serverConfig.ssl ? 'https' : 'http',
-        host: serverConfig.hostname || 'localhost',
+      loadURL = URI.build({
+        protocol: serverConfig.ssl ? 'https' : 'http',
+        hostname: serverConfig.hostname || 'localhost',
         port: serverConfig.port || 9000
       });
     }
