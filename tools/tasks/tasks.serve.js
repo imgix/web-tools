@@ -45,19 +45,15 @@ module.exports = function setUpTasks(gulp) {
     express = require('express');
     app = serverConfig.running.app = express();
 
-    // Add logging via Morgan middleware
-    if (_.get(serverConfig, 'options.logs')) {
-      app.use(require('morgan')());
-    }
+    middlewareStack = ['utilities'];
 
-    // Add gzipping via compression middleware
-    if (_.get(serverConfig, 'options.gzip')) {
-      app.use(require('compression')());
+    if (serverConfig.middleware) {
+      middlewareStack = _.concat(middlewareStack, serverConfig.middleware);
+    } else {
+      middlewareStack.push(function dumbServer(app, config) {
+        app.use(express.static(config.destPath));
+      });
     }
-
-    middlewareStack = _.castArray(serverConfig.middleware || function (app, config) {
-      app.use(express.static(config.destPath));
-    });
 
     // Apply each middleware in the stack, in order
     _.each(middlewareStack, function applyMiddleware(middleware) {

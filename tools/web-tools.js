@@ -29,6 +29,7 @@ module.exports = {
       gulp.middlewareCache = new MiddlewareCache();
 
       // Add the default middleware to the cache
+      gulp.middlewareCache.put('utilities', '../middleware/middleware.utilities.js');
       gulp.middlewareCache.put('simple-site', '../middleware/middleware.simple-site.js');
       gulp.middlewareCache.put('single-page-app', '../middleware/middleware.single-page-app.js');
 
