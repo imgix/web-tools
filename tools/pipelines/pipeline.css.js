@@ -92,18 +92,18 @@ module.exports = function setupCSSPipeline(gulp) {
                           cwd: options.path[0],
                           nosort: true
                         },
-                      bowerSearch;
+                      extSearch;
 
                   if (importIDs[id]) {
                     return importIDs[id];
                   }
 
-                  // Look for a bower package
-                  bowerSearch = /^(.+):(.+)$/.exec(id);
+                  // Look for an external package
+                  extSearch = /^(.+):(.+)$/.exec(id);
 
-                  if (!!bowerSearch) {
-                    pattern = bowerSearch[2];
-                    globOptions.cwd = path.join(options.root, 'bower_components', bowerSearch[1]);
+                  if (!!extSearch) {
+                    pattern = extSearch[2];
+                    globOptions.cwd = path.join(options.root, _.get(gulp, 'webToolsConfig.ext.modules', 'bower_components'), extSearch[1]);
                   }
 
                   files = glob.sync(path.join('**', pattern), globOptions);
