@@ -1,6 +1,6 @@
 var _ = require('lodash'),
     runSequence = require('run-sequence'),
-    mainBowerFiles = require('main-bower-files');
+    getExt = require('../misc/get-ext.js');
 
 module.exports = function setUpTasks(gulp) {
   var appAssets = _.get(gulp, 'webToolsConfig.appAssets'),
@@ -67,12 +67,7 @@ module.exports = function setUpTasks(gulp) {
   }
 
   if (hasExtAssets) {
-    extFiles = mainBowerFiles({
-      paths: {
-          bowerJson: _.get(gulp, 'webToolsConfig.bower.json'),
-          bowerDirectory: _.get(gulp, 'webToolsConfig.bower.components')
-        }
-    });
+    extFiles = getExt(_.get(gulp, 'webToolsConfig.extOptions'));
 
     gulp.task('watch-ext', function watchExtTask() {
       // Pass follow:true here to ensure symlinks are followed (for `bower link`ed components)

@@ -1,9 +1,9 @@
 var _ = require('lodash'),
     combine = require('stream-combiner'),
-    mainBowerFiles = require('main-bower-files'),
     runSequence = require('run-sequence'),
     clean = require('gulp-clean'),
-    filter = require('gulp-filter');
+    filter = require('gulp-filter'),
+    getExt = require('../misc/get-ext.js');
 
 module.exports = function setUpTasks(gulp) {
   var appAssets = _.get(gulp, 'webToolsConfig.appAssets'),
@@ -132,12 +132,7 @@ module.exports = function setUpTasks(gulp) {
   }
 
   if (hasExtAssets) {
-    extFiles = mainBowerFiles({
-      paths: {
-          bowerJson: _.get(gulp, 'webToolsConfig.bower.json'),
-          bowerDirectory: _.get(gulp, 'webToolsConfig.bower.components')
-        }
-    });
+    extFiles = getExt(_.get(gulp, 'webToolsConfig.extOptions'));
 
     // Main external-asset build task:
     gulp.task('build-ext', function buildExtTask(done) {
@@ -171,7 +166,7 @@ module.exports = function setUpTasks(gulp) {
             return;
           }
 
-          return pipeline(settings.options || {}, assetDependencyStreams);
+          return pipeline(settings.options || {});
         });
 
         fullPipeline = combine(
