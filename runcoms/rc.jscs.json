@@ -38,7 +38,6 @@
     "try",
     "catch"
   ],
-  "requireDollarBeforejQueryAssignment": true,
   "requireDotNotation": true,
   "requireLineBreakAfterVariableAssignment": true,
   "requireLineFeedAtFileEnd": true,
@@ -72,7 +71,6 @@
   "requireSpacesInFunctionExpression": {
       "beforeOpeningCurlyBrace": true
   },
-  "safeContextKeyword": ["th"],
   "validateAlignedFunctionParameters": {
     "lineBreakAfterOpeningBraces": true,
     "lineBreakBeforeClosingBraces": true
