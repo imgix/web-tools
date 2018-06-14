@@ -14,15 +14,18 @@ module.exports = function chromeLoad(url) {
 
     // Filter to tabs matching this URL
     .then(function filterTabs(tabList) {
-        var urlRegex = new RegExp(url.replace('/', '\\/')),
-            tabRegex = /\[(\d+):(\d+)\]\s/,
-            tabIDs;
-
-        tabIDs = _.chain(tabList.split('\n'))
+        var tabIDs = _.chain(tabList.split('\n'))
           .map(function reloadTab(tabInfo) {
-              if (urlRegex.test(tabInfo)) {
-                // [0] is full match, [1] is window id, [2] is tab id
-                return tabRegex.exec(tabInfo)[2];
+              var urlRegex = new RegExp('^\[(\d+:?\d*)\]\s' + url.replace('/', '\\/')),
+                  result = urlRegex.test(tabInfo);
+
+              if (!!result && result.length) {
+                // [0] is full match, [1] is window & tab id
+                return _.chain(result)
+                  .get('[1]')
+                  .split(':')
+                  .last()
+                  .value();
               } else {
                 return null;
               }
