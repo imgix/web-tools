@@ -16,8 +16,8 @@ module.exports = function chromeLoad(url) {
     .then(function filterTabs(tabList) {
         var tabIDs = _.chain(tabList.split('\n'))
           .map(function reloadTab(tabInfo) {
-              var urlRegex = new RegExp('^\[(\d+:?\d*)\]\s' + url.replace('/', '\\/')),
-                  result = urlRegex.test(tabInfo);
+              var urlRegex = new RegExp('^\\[(\\d+:?\\d*)\\]\\s' + url.replace('/', '\\/')),
+                  result = urlRegex.exec(tabInfo);
 
               if (!!result && result.length) {
                 // [0] is full match, [1] is window & tab id
