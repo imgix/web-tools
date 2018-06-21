@@ -98,7 +98,9 @@ module.exports = function setUpTasks(gulp) {
         }
 
         assetStreams = _.map(assetOptions.pipelines || [], function getStream(settings) {
-          var pipeline;
+          var pipeline,
+              executedPipeline,
+              filterPipeline;
 
           if (_.isFunction(settings.pipeline)) {
             pipeline = settings.pipeline(gulp);
@@ -110,7 +112,22 @@ module.exports = function setUpTasks(gulp) {
             return;
           }
 
-          return pipeline(settings.options || {}, assetDependencyStreams);
+          executedPipeline = pipeline(settings.options || {}, assetDependencyStreams);
+
+          if (!settings.filter) {
+            return executedPipeline;
+
+          } else {
+            filterPipeline = filter(settings.filter, {
+              restore: true
+            });
+
+            return combine([
+              filterPipeline,
+              executedPipeline,
+              filterPipeline.restore
+            ]);
+          }
         });
 
         fullPipeline = combine(
