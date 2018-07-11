@@ -1,5 +1,5 @@
 {
-  "attr-lowercase": true,
+  "attr-lowercase": ["viewBox"],
   "attr-no-duplication": true,
   "attr-unsafe-chars": true,
   "attr-value-double-quotes": true,
