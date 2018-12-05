@@ -46,17 +46,22 @@ module.exports = function setUpTasks(gulp) {
       // Set up a watcher for each app asset type
       _.each(appAssets, function addAppWatcher(assetOptions, assetType) {
         gulp.watch(assetOptions.src, function onChange() {
-          var tasks = [],
-              buildTask = 'build-app-' + assetType;
+          var tasks = _.chain(appAssets)
+            .pickBy(function examineAppDependencies(dependentAssetOptions, dependentAssetType) {
+                return _.includes(dependentAssetOptions.appAssetDependencies, assetType);
+              })
+            .keys()
+            .tap(function unshift(list) {
+                list.unshift(assetType);
+              })
+            .uniq()
+            .map(function getBuildTaskName(assetType) {
+                return 'build-app-' + assetType;
+              })
+            .concat(getPostBuildTasks())
+            .value();
 
-          // Queue a build for any other assets that are dependent on this one
-          _.each(appAssets, function examineAppDependencies(dependentAssetOptions, dependentAssetType) {
-            if (_.includes(dependentAssetOptions.appAssetDependencies, assetType)) {
-              tasks.push('build-app-' + dependentAssetType);
-            }
-          });
-
-          _.spread(runSequence)(_.concat(tasks, buildTask, getPostBuildTasks()));
+          _.spread(runSequence)(tasks);
         });
       });
     }, {
