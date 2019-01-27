@@ -1,6 +1,5 @@
 var _ = require('lodash'),
-    runSequence = require('run-sequence'),
-    getExt = require('../misc/get-ext.js');
+    runSequence = require('run-sequence');
 
 module.exports = function setUpTasks(gulp) {
   var appAssets = _.get(gulp, 'webToolsConfig.appAssets'),
@@ -72,7 +71,7 @@ module.exports = function setUpTasks(gulp) {
   }
 
   if (hasExtAssets) {
-    extFiles = getExt(_.get(gulp, 'webToolsConfig.extOptions'));
+    extFiles = gulp.getExt(_.get(gulp, 'webToolsConfig.extOptions'));
 
     gulp.task('watch-ext', function watchExtTask() {
       // Pass follow:true here to ensure symlinks are followed (for `bower link`ed components)

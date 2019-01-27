@@ -2,8 +2,7 @@ var _ = require('lodash'),
     combine = require('stream-combiner'),
     runSequence = require('run-sequence'),
     clean = require('gulp-clean'),
-    filter = require('gulp-filter'),
-    getExt = require('../misc/get-ext.js');
+    filter = require('gulp-filter');
 
 module.exports = function setUpTasks(gulp) {
   var appAssets = _.get(gulp, 'webToolsConfig.appAssets'),
@@ -149,7 +148,7 @@ module.exports = function setUpTasks(gulp) {
   }
 
   if (hasExtAssets) {
-    extFiles = getExt(_.get(gulp, 'webToolsConfig.extOptions'));
+    extFiles = gulp.getExt();
 
     // Main external-asset build task:
     gulp.task('build-ext', function buildExtTask(done) {
