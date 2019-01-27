@@ -7,7 +7,8 @@ module.exports = function configureServer(app, config) {
     return response.sendFile('index.html', {
       root: config.appAssets.html.dest,
       headers: {
-          'Cache-Control': 'private'
+          'Cache-Control': 'private',
+          'X-Frame-Options': 'DENY'
         }
     });
   }
