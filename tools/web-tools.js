@@ -1,5 +1,6 @@
 var _ = require('lodash'),
     args = require('yargs').argv,
+    getExt = require('./gulp-get-ext.js'),
     metadata = require('./gulp-metadata.js'),
     tasks = require('./gulp-tasks.js'),
     StreamCache = require('./misc/stream-cache.js'),
@@ -34,6 +35,7 @@ module.exports = {
       gulp.middlewareCache.put('single-page-app', '../middleware/middleware.single-page-app.js');
 
       // Apply gulp enhancements
+      getExt.applyTo(gulp);
       metadata.applyTo(gulp);
       tasks.applyTo(gulp);
 
