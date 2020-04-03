@@ -15,7 +15,7 @@ module.exports = {
             return require('main-npm-files')('**/*.*', _.defaultsDeep({
               pkgJson: _.get(extOptions, 'json', 'package.json'),
               nodeModules: _.get(extOptions, 'modules', 'node_modules'),
-              onlyMain: true
+              onlyMain: false
             }, options));
 
           } else {
