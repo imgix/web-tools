@@ -83,7 +83,7 @@ module.exports = function setupCSSPipeline(gulp) {
               transform: function (fileContents) {
                   // This allows us to use //-style comments in imported files, since
                   // PostCSS-import doesn't allow non-css syntaxes in its parser
-                  return fileContents.replace(/\/\/\s(.*)\n/g, '/* $1 */\n');
+                  return fileContents.replace(/\/\/\s?(.*)\n/g, '/* $1 */\n');
                 },
               resolve: function (id, baseDir, options) {
                   var files,
