@@ -75,7 +75,7 @@ module.exports = function setUpTasks(gulp) {
 
     gulp.task('watch-ext', function watchExtTask() {
       // Pass follow:true here to ensure symlinks are followed (for `bower link`ed components)
-      gulp.watch(extFiles, {follow: true}, function onChange() {
+      gulp.watch(extFiles, {debounceDelay: 200, follow: true}, function onChange() {
         var tasks = [],
             buildTask = 'build-ext';
 

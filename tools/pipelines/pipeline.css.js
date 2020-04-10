@@ -83,11 +83,10 @@ module.exports = function setupCSSPipeline(gulp) {
               transform: function (fileContents) {
                   // This allows us to use //-style comments in imported files, since
                   // PostCSS-import doesn't allow non-css syntaxes in its parser
-                  return fileContents.replace(/\/\/\s(.*)\n/g, '/* $1 */\n');
+                  return fileContents.replace(/\/\/\s?(.*)\n/g, '/* $1 */\n');
                 },
               resolve: function (id, baseDir, options) {
                   var files,
-                      pattern = id,
                       globOptions = {
                           cwd: options.path[0],
                           nosort: true
@@ -102,11 +101,12 @@ module.exports = function setupCSSPipeline(gulp) {
                   extSearch = /^(.+):(.+)$/.exec(id);
 
                   if (!!extSearch) {
-                    pattern = extSearch[2];
                     globOptions.cwd = path.join(options.root, _.get(gulp, 'webToolsConfig.ext.modules', 'bower_components'), extSearch[1]);
-                  }
 
-                  files = glob.sync(path.join('**', pattern), globOptions);
+                    files = glob.sync(extSearch[2], globOptions);
+                  } else {
+                    files = glob.sync(path.join('**', id), globOptions);
+                  }
 
                   if (files.length) {
                     files = _.map(files, function addRoot(filepath) {
