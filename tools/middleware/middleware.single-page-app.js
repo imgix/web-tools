@@ -7,7 +7,11 @@ module.exports = function configureServer(app, config) {
     return response.sendFile('index.html', {
       root: config.appAssets.html.dest,
       headers: {
-          'Cache-Control': 'private'
+          'Cache-Control': 'private',
+          'X-Frame-Options': 'DENY',
+          'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+          'X-XSS-Protection': '1; mode=block',
+          'X-Content-Type-Options': 'nosniff'
         }
     });
   }
