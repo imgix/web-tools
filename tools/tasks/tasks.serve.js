@@ -95,7 +95,7 @@ module.exports = function setUpTasks(gulp) {
       });
     }.bind(server));
 
-    server.destroy = function () {
+    server.destroy = function destroy() {
       var th = this;
 
       return new Promise(function constructPromise(resolve) {
@@ -116,13 +116,13 @@ module.exports = function setUpTasks(gulp) {
     var running = serverConfig.running,
         promises;
 
-      delete serverConfig.running;
+    delete serverConfig.running;
 
-      promises = _.map(running, function shutdownService(service, serviceName) {
-        var closeFunction = service.destroy || service.close || undefined;
+    promises = _.map(running, function shutdownService(service, serviceName) {
+      var closeFunction = service.destroy || service.close || undefined;
 
-        return Promise.resolve(_.isFunction(closeFunction) ? closeFunction.call(service) : undefined);
-      });
+      return Promise.resolve(_.isFunction(closeFunction) ? closeFunction.call(service) : undefined);
+    });
 
     return Promise.all(promises);
   }, {
