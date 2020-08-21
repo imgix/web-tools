@@ -13,6 +13,7 @@ module.exports = function setupJSPipeline(gulp) {
       doBanner: false,
       doVersioning: false,
       doSourceMaps: false,
+      doBabel: true,
 
       concatName: 'override_me.js',
       banner: '/* Built: ' + Date.now() + ' */\n',
@@ -38,6 +39,9 @@ module.exports = function setupJSPipeline(gulp) {
 
       // Productionization pipeline
       options.doSourceMaps && require('gulp-sourcemaps').init(),
+      options.doBabel && require('gulp-babel')({
+          presets: [require('@babel/preset-env')]
+        }),
       options.doMinify && require('gulp-uglify')(options.uglifyOptions),
       options.doConcat && require('gulp-concat')(options.concatName),
       options.doBanner && require('gulp-header')(options.banner),
