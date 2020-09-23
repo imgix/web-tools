@@ -15,7 +15,6 @@
       "beforeOpeningRoundBrace": true
   },
   "disallowSpacesInsideArrayBrackets": true,
-  "disallowSpacesInsideObjectBrackets": true,
   "disallowSpacesInsideParentheses": {
     "only": [
       "{", "}"
