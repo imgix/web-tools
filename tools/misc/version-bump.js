@@ -51,7 +51,7 @@ module.exports = function versionBump(bumpBy) {
           }
 
           jsonData.version = newVersion;
-          chunk.contents = new Buffer(JSON.stringify(jsonData, false, '  ') + '\n');
+          chunk.contents = Buffer.from(JSON.stringify(jsonData, false, '  ') + '\n');
 
           this.push(chunk);
         }
