@@ -1,5 +1,4 @@
-var _ = require('lodash'),
-    runSequence = require('run-sequence');
+var _ = require('lodash');
 
 module.exports = function setUpTasks(gulp) {
   var appAssets = _.get(gulp, 'webToolsConfig.appAssets'),
@@ -13,14 +12,12 @@ module.exports = function setUpTasks(gulp) {
     return;
   }
 
-  runSequence = runSequence.use(gulp);
-
   function getPostBuildTasks() {
     return _.chain(gulp)
       .get('webToolsConfig.watchOptions.afterBuild', ['serve-load'])
       .castArray()
       .filter(function checkValidity(onChangeTask) {
-          return _.has(gulp.tasks, onChangeTask);
+          return _.has(gulp._registry._tasks, onChangeTask);
         })
       .value();
   }
@@ -32,7 +29,10 @@ module.exports = function setUpTasks(gulp) {
       hasExtAssets && 'watch-ext'
     ]);
 
-    runSequence(watchTasks, done);
+    return gulp.series(...watchTasks, function finishBuildAppAssets(seriesDone) {
+      seriesDone();
+      done();
+    })();
   }, {
     description: 'Watch all assets and automatically build and reload the browser when a change is made.',
     notes: ['This task will run indefinitely until it is killed.'],
@@ -41,10 +41,10 @@ module.exports = function setUpTasks(gulp) {
   });
 
   if (hasAppAssets) {
-    gulp.task('watch-app', function watchAppTask() {
+    gulp.task('watch-app', function watchAppTask(done) {
       // Set up a watcher for each app asset type
       _.each(appAssets, function addAppWatcher(assetOptions, assetType) {
-        gulp.watch(assetOptions.src, function onChange() {
+        gulp.watch(assetOptions.src, function onChange(loopDone) {
           var tasks = _.chain(appAssets)
             .pickBy(function examineAppDependencies(dependentAssetOptions, dependentAssetType) {
                 return _.includes(dependentAssetOptions.appAssetDependencies, assetType);
@@ -60,9 +60,14 @@ module.exports = function setUpTasks(gulp) {
             .concat(getPostBuildTasks())
             .value();
 
-          _.spread(runSequence)(tasks);
+          return gulp.series(...tasks, function finishBuildAppAssets(seriesDone) {
+            seriesDone();
+            loopDone();
+          })();
         });
       });
+
+      done();
     }, {
       description: 'Watch local assets and automatically build and reload the browser when a change is made.',
       notes: ['This task will run indefinitely until it is killed.'],
@@ -73,9 +78,9 @@ module.exports = function setUpTasks(gulp) {
   if (hasExtAssets) {
     extFiles = gulp.getExt(_.get(gulp, 'webToolsConfig.extOptions'));
 
-    gulp.task('watch-ext', function watchExtTask() {
-      // Pass follow:true here to ensure symlinks are followed (for `bower link`ed components)
-      gulp.watch(extFiles, {debounceDelay: 200, follow: true}, function onChange() {
+    gulp.task('watch-ext', function watchExtTask(done) {
+      // Pass follow:true here to ensure symlinks are followed (for `npm link`ed components)
+      gulp.watch(extFiles, {delay: 200, followSymlinks: true}, function onChange(watchDone) {
         var tasks = [],
             buildTask = 'build-ext';
 
@@ -86,8 +91,13 @@ module.exports = function setUpTasks(gulp) {
           }
         });
 
-        _.spread(runSequence)(_.concat(tasks, buildTask, getPostBuildTasks()));
+        return gulp.series(..._.concat(tasks, buildTask, getPostBuildTasks()), function finishBuildAppAssets(seriesDone) {
+          seriesDone();
+          watchDone();
+        })();
       });
+
+      done();
     }, {
       description: 'Watch external assets and automatically build and reload the browser when a change is made.',
       notes: ['This task will run indefinitely until it is killed.'],
