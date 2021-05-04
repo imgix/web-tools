@@ -1,8 +1,9 @@
 var _ = require('lodash'),
-    path = require('path'),
+    babelify = require('babelify'),
     combine = require('stream-combiner'),
     jshintReporter = require('reporter-plus/jshint'),
-    jscsReporter = require('reporter-plus/jscs');
+    jscsReporter = require('reporter-plus/jscs'),
+    path = require('path');
 
 module.exports = function setupJSPipeline(gulp) {
   return function jsPipeline(options) {
@@ -25,6 +26,12 @@ module.exports = function setupJSPipeline(gulp) {
         }
     });
 
+    const BABELIFY_CONFIG = {
+      presets: _.compact([
+        options.doBabel && require('@babel/preset-env')
+      ])
+    };
+
     return combine(_.compact([
       // Checking pipeline
       options.doCheck && require('gulp-jshint')(_.merge(
@@ -37,11 +44,17 @@ module.exports = function setupJSPipeline(gulp) {
         }),
       options.doCheck && require('gulp-jscs').reporter(jscsReporter.path),
 
+      // Browserify
+      require('gulp-bro')(
+        {
+          transform: [
+            babelify.configure(BABELIFY_CONFIG)
+          ]
+        }
+      ),
+
       // Productionization pipeline
       options.doSourceMaps && require('gulp-sourcemaps').init(),
-      options.doBabel && require('gulp-babel')({
-          presets: [require('@babel/preset-env')]
-        }),
       options.doMinify && require('gulp-uglify')(options.uglifyOptions),
       options.doConcat && require('gulp-concat')(options.concatName),
       options.doBanner && require('gulp-header')(options.banner),
