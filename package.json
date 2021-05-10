@@ -79,5 +79,8 @@
     "urijs": "^1.19.0",
     "vinyl-fs": "2.4.4",
     "yargs": "7.0.2"
+  },
+  "dependencies": {
+    "gulp-sort": "^2.0.0"
   }
 }

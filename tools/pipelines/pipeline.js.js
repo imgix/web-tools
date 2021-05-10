@@ -3,7 +3,8 @@ var _ = require('lodash'),
     combine = require('stream-combiner'),
     jshintReporter = require('reporter-plus/jshint'),
     jscsReporter = require('reporter-plus/jscs'),
-    path = require('path');
+    path = require('path'),
+    sort = require('gulp-sort');
 
 module.exports = function setupJSPipeline(gulp) {
   return function jsPipeline(options) {
@@ -16,6 +17,7 @@ module.exports = function setupJSPipeline(gulp) {
       doSourceMaps: false,
       doBabel: true,
 
+      entryFile: 'application.js',
       concatName: 'override_me.js',
       banner: '/* Built: ' + Date.now() + ' */\n',
       mapsDir: '.maps',
@@ -33,6 +35,11 @@ module.exports = function setupJSPipeline(gulp) {
     };
 
     return combine(_.compact([
+      sort({
+        comparator: (file1) => {
+          return file1.path.includes(options.entryFile) ? -1 : 1;
+        }
+      }),
       // Checking pipeline
       options.doCheck && require('gulp-jshint')(_.merge(
           {lookup: false},
