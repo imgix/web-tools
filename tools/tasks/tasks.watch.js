@@ -91,7 +91,9 @@ module.exports = function setUpTasks(gulp) {
           }
         });
 
-        return gulp.series(..._.concat(tasks, buildTask, getPostBuildTasks()), function finishBuildAppAssets(seriesDone) {
+        let allTasks = _.concat(tasks, buildTask, getPostBuildTasks();
+
+        return gulp.series(...allTasks), function finishBuildAppAssets(seriesDone) {
           seriesDone();
           watchDone();
         })();
