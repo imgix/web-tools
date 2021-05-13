@@ -1,6 +1,6 @@
 var _ = require('lodash'),
     combine = require('stream-combiner'),
-    runSequence = require('run-sequence'),
+    runSequence = require('gulp4-run-sequence'),
     clean = require('gulp-clean'),
     filter = require('gulp-filter');
 
@@ -18,7 +18,7 @@ module.exports = function setUpTasks(gulp) {
   runSequence = runSequence.use(gulp);
 
   // Main build task:
-  gulp.task('build', function buildTask(done) {
+  gulp.task('build', gulp.series(function buildTask(done) {
     var buildTasks = _.compact([
       hasAppAssets && 'build-app',
       hasExtAssets && 'build-ext'
@@ -29,21 +29,21 @@ module.exports = function setUpTasks(gulp) {
       buildTasks,
       done
     );
-  }, {
+  }), {
     description: 'Process and/or move all assets to this project\'s destination directory',
     category: 'main',
     weight: 1
   });
 
   // Task to clean destination
-  gulp.task('build-clean', function buildCleanTask() {
+  gulp.task('build-clean', gulp.series(function buildCleanTask() {
     var destPath = _.get(gulp, 'webToolsConfig.destPath');
 
     if (destPath) {
-      return gulp.src(destPath, {read: false})
+      return gulp.src(destPath, {read: false, allowEmpty: true})
         .pipe(clean());
     }
-  }, {
+  }), {
     description: 'Clear and delete the destination directory of this project\'s build process.',
     category: 'build'
   });
@@ -55,10 +55,10 @@ module.exports = function setUpTasks(gulp) {
         return 'build-app-' + assetType;
       });
 
-      runSequence(
-        tasks,
-        done
-      );
+      return gulp.series(...tasks, function buildAppTask(seriesDone) {
+        seriesDone();
+        done();
+      })();
     }, {
       description: 'Process and/or move all local assets to this project\'s destination directory',
       category: 'build'
@@ -79,7 +79,7 @@ module.exports = function setUpTasks(gulp) {
       appAssetDependencies = _.map(assetOptions.appAssetDependencies, _.partial(prefixAssetType, 'app'));
       extAssetDependencies = _.map(assetOptions.extAssetDependencies, _.partial(prefixAssetType, 'ext'));
 
-      gulp.task('build-app-' + assetType, taskDependencies, function task() {
+      gulp.task('build-app-' + assetType, function task(done) {
         var assetDependencyStreams,
             assetStreams,
             fullPipeline;
@@ -139,7 +139,14 @@ module.exports = function setUpTasks(gulp) {
             .value()
         );
 
-        return gulp.src(assetOptions.src).pipe(fullPipeline);
+        return gulp.series(...taskDependencies, function build(seriesDone) {
+          return gulp.src(assetOptions.src, { allowEmpty: true })
+            .pipe(fullPipeline)
+            .on('end', function finishBuildTask () {
+              seriesDone();
+              done();
+            });
+        })();
       }, {
         description: 'Process and/or move local "' + assetType + '" assets to this project\'s destination directory',
         category: 'build'
@@ -151,7 +158,7 @@ module.exports = function setUpTasks(gulp) {
     extFiles = gulp.getExt();
 
     // Main external-asset build task:
-    gulp.task('build-ext', function buildExtTask(done) {
+    gulp.task('build-ext', gulp.series(function buildExtTask(done) {
       var tasks = _.map(extAssets, function prefix(assetOptions, assetType) {
         return 'build-ext-' + assetType;
       });
@@ -160,14 +167,14 @@ module.exports = function setUpTasks(gulp) {
         tasks,
         done
       );
-    }, {
+    }), {
       description: 'Process and/or move all external assets to this project\'s destination directory',
       category: 'build'
     });
 
     // Set up build task for each ext asset type
     _.each(extAssets, function addExtBuildTask(assetOptions, assetType) {
-      gulp.task('build-ext-' + assetType, function task() {
+      gulp.task('build-ext-' + assetType, gulp.series(function task(done) {
         var assetStreams,
             fullPipeline;
 
@@ -197,8 +204,10 @@ module.exports = function setUpTasks(gulp) {
             .value()
         );
 
-        return gulp.src(extFiles).pipe(fullPipeline);
-      }, {
+        return gulp.src(extFiles,{ allowEmpty: true })
+          .pipe(fullPipeline)
+          .on('end', done);
+      }), {
         description: 'Process and/or move external "' + assetType + '" assets to this project\'s destination directory',
         category: 'build'
       });

@@ -9,11 +9,11 @@ module.exports = function setUpTask(gulp) {
     return;
   }
 
-  gulp.task('version', function versionTask() {
+  gulp.task('version', gulp.series(function versionTask() {
     return gulp.src(versioningSrc, {base: '.'})
         .pipe(versionBump(args.bump))
         .pipe(gulp.dest('.'));
-  }, {
+  }), {
     description: 'Bump this project\'s semantic version number.',
     category: 'misc',
     arguments: {
