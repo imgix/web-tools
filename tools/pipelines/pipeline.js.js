@@ -62,7 +62,7 @@ module.exports = function setupJSPipeline(gulp) {
 
       // Productionization pipeline
       options.doSourceMaps && require('gulp-sourcemaps').init(),
-      options.doMinify && require('gulp-uglify')(options.uglifyOptions),
+      options.doMinify && require('gulp-uglify-es').default(options.uglifyOptions),
       options.doConcat && require('gulp-concat')(options.concatName),
       options.doBanner && require('gulp-header')(options.banner),
       options.doVersioning && require('gulp-rev')(),
