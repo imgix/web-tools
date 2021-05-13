@@ -1,6 +1,6 @@
 {
   "name": "web-tools",
-  "version": "11.0.0",
+  "version": "11.1.0",
   "description": "Repository for tools and configurations common to all imgix web projects",
   "repository": {
     "type": "git",
@@ -9,7 +9,7 @@
   "author": "imgix",
   "license": "BSD",
   "main": "tools/web-tools.js",
-  "devDependencies": {
+  "dependencies": {
     "@babel/core": "^7.11.4",
     "@babel/preset-env": "^7.14.1",
     "autoprefixer": "6.7.7",
@@ -40,6 +40,7 @@
     "gulp-rename": "1.2.2",
     "gulp-rev": "7.1.2",
     "gulp4-run-sequence": "^1.0.1",
+    "gulp-sort": "^2.0.0",
     "gulp-sourcemaps": "2.4.1",
     "gulp-svgmin": "1.2.3",
     "gulp-svgstore": "6.1.0",
@@ -79,8 +80,5 @@
     "urijs": "^1.19.0",
     "vinyl-fs": "2.4.4",
     "yargs": "7.0.2"
-  },
-  "dependencies": {
-    "gulp-sort": "^2.0.0"
   }
 }
