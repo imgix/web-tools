@@ -140,7 +140,7 @@ module.exports = function setUpTasks(gulp) {
         );
 
         return gulp.series(...taskDependencies, function build(seriesDone) {
-          return gulp.src(assetOptions.src)
+          return gulp.src(assetOptions.src, { allowEmpty: true })
             .pipe(fullPipeline)
             .on('end', function finishBuildTask () {
               seriesDone();
@@ -204,7 +204,7 @@ module.exports = function setUpTasks(gulp) {
             .value()
         );
 
-        return gulp.src(extFiles)
+        return gulp.src(extFiles,{ allowEmpty: true })
           .pipe(fullPipeline)
           .on('end', done);
       }), {
