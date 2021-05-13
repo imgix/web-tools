@@ -204,7 +204,7 @@ module.exports = function setUpTasks(gulp) {
             .value()
         );
 
-        return gulp.src(extFiles,{ allowEmpty: true })
+        return gulp.src(extFiles, { allowEmpty: true })
           .pipe(fullPipeline)
           .on('end', done);
       }), {
