@@ -63,6 +63,8 @@ module.exports = function versionBump(bumpBy) {
           gutil.colors.green('Updated version to ' + newVersion),
           gutil.colors.grey('(Previously ' + oldVersion + ')')
         );
+
+        done();
       }
   );
 };
