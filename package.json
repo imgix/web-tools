@@ -67,7 +67,7 @@
     "postcss-selector-not": "2.0.0",
     "postcss-simple-vars": "3.0.0",
     "q": "1.4.1",
-    "reporter-plus": "git://github.com/jayeb/reporter-plus.git#1.6.0",
+    "reporter-plus": "git+https://github.com/jayeb/reporter-plus.git#1.6.0",
     "run-sequence": "1.2.2",
     "semver": "5.3.0",
     "stream-combiner": "0.2.2",
@@ -88,7 +88,7 @@
     "gulp-util": "3.0.7",
     "jshint": "2.9.1",
     "lodash": "4.6.1",
-    "reporter-plus": "git://github.com/jayeb/reporter-plus.git",
+    "reporter-plus": "git+https://github.com/jayeb/reporter-plus.git",
     "yargs": "4.2.0"
   }
 }
