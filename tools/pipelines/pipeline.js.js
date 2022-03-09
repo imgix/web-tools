@@ -42,7 +42,7 @@ module.exports = function setupJSPipeline(gulp) {
       options.doBabel && require('gulp-babel')({
           presets: [require('@babel/preset-env')]
         }),
-        options.doMinify && require('gulp-uglify-es').default(options.uglifyOptions),
+      options.doMinify && require('gulp-uglify-es').default(options.uglifyOptions),
       options.doConcat && require('gulp-concat')(options.concatName),
       options.doBanner && require('gulp-header')(options.banner),
       options.doVersioning && require('gulp-rev')(),
