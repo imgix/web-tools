@@ -14,8 +14,8 @@
   "disallowSpacesInFunctionDeclaration": {
       "beforeOpeningRoundBrace": true
   },
-  "disallowSpacesInsideArrayBrackets": true,
-  "disallowSpacesInsideObjectBrackets": true,
+  "disallowSpacesInsideArrayBrackets": false,
+  "disallowSpacesInsideObjectBrackets": false,
   "disallowSpacesInsideParentheses": {
     "only": [
       "{", "}"

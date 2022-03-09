@@ -1,6 +1,6 @@
 {
   "name": "web-tools",
-  "version": "10.3.1",
+  "version": "10.4.0",
   "description": "Repository for tools and configurations common to all imgix web projects",
   "repository": {
     "type": "git",
@@ -39,7 +39,7 @@
     "gulp-sourcemaps": "2.4.1",
     "gulp-svgmin": "1.2.3",
     "gulp-svgstore": "6.1.0",
-    "gulp-uglify": "2.1.0",
+    "gulp-uglify-es": "^2.0.0",
     "gulp-util": "3.0.8",
     "jscs": "3.0.7",
     "jshint": "2.9.4",
