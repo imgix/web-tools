@@ -24,7 +24,6 @@ module.exports = function setUpTasks(gulp) {
     ]);
 
     runSequence(
-      'build-clean',
       buildTasks,
       done
     );
