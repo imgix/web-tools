@@ -1,7 +1,6 @@
 var _ = require('lodash'),
     combine = require('stream-combiner'),
     runSequence = require('run-sequence'),
-    clean = require('gulp-clean'),
     filter = require('gulp-filter');
 
 module.exports = function setUpTasks(gulp) {
@@ -40,8 +39,9 @@ module.exports = function setUpTasks(gulp) {
     var destPath = _.get(gulp, 'webToolsConfig.destPath');
 
     if (destPath) {
+      console.log('testing');
       return gulp.src(destPath, {read: false})
-        .pipe(clean());
+
     }
   }, {
     description: 'Clear and delete the destination directory of this project\'s build process.',
