@@ -39,7 +39,7 @@ module.exports = function setUpTasks(gulp) {
   gulp.task('build-clean', function buildCleanTask() {
     var destPath = _.get(gulp, 'webToolsConfig.destPath');
 
-    if (destPath) {
+    if (destPath && !_.get(process.env, 'NODE_ENV')) {
       return gulp.src(destPath, {read: false})
         .pipe(clean());
     }
