@@ -12,7 +12,7 @@ module.exports = {
       var runningTask = _.get(args, '_[0]') || 'default';
 
       // Get config based on the arguments given
-      gulp.webToolsConfig = configFactory(gulp, runningTask, args);
+      gulp.webToolsConfig = configFactory(gulp, runningTask, _.merge(args, { env: process.env.NODE_ENV }));
 
       // Create a StreamCache on this instance, to help save some time down the road
       gulp.streamCache = new StreamCache();
