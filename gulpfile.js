@@ -1,6 +1,6 @@
 var _ = require('lodash'),
     path = require('path'),
-    gulp = require('gulp'),
+    gulp = require('gulp-v3'),
     gutil = require('gulp-util'),
     args = require('yargs').argv,
     runSequence = require('run-sequence'),

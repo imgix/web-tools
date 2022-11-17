@@ -4,6 +4,8 @@ var _ = require('lodash'),
     clean = require('gulp-clean'),
     filter = require('gulp-filter');
 
+const fs = require("fs/promises")
+
 module.exports = function setUpTasks(gulp) {
   var appAssets = _.get(gulp, 'webToolsConfig.appAssets'),
       extAssets = _.get(gulp, 'webToolsConfig.extAssets'),
@@ -24,11 +26,24 @@ module.exports = function setUpTasks(gulp) {
       hasExtAssets && 'build-ext'
     ]);
 
-    runSequence(
-      'build-clean',
-      buildTasks,
-      done
-    );
+    const destPath = _.get(gulp, 'webToolsConfig.destPath');
+
+    fs.access("./.srv_dev").catch(() => {
+      fs.mkdir(destPath, err => {
+        if (err) {
+          console.log(`Error creating directory ${destPath}`);
+
+          throw err;
+        }
+      });
+    }).finally(() => {
+      runSequence(
+        'build-clean',
+        buildTasks,
+        done
+      );
+    });
+
   }, {
     description: 'Process and/or move all assets to this project\'s destination directory',
     category: 'main',
