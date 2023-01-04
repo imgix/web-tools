@@ -35,6 +35,9 @@ module.exports = function setupHTMLPipeline(gulp) {
     } else if (ext === '.html') {
       return file.contents.toString();
 
+    } else if (ext === '.js') {
+      return `<script src="${ filePath }" async defer></script>`;
+
     // Use the default transform as fallback
     } else if (ext !== '.map') {
       return inject.transform.apply(inject.transform, arguments);
