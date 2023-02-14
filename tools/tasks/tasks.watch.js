@@ -28,7 +28,7 @@ module.exports = function setUpTasks(gulp) {
     var watchTasks = _.compact([
       hasAppAssets && 'watch-app',
       hasExtAssets && 'watch-ext',
-      'watch-config'
+      !!args.watch && 'watch-config'
     ]);
 
     return gulp.series(...watchTasks, function finishBuildAppAssets(seriesDone) {
