@@ -86,7 +86,7 @@ module.exports = function setUpTasks(gulp) {
           }
         });
 
-        _.spread(runSequence)(_.concat(tasks, buildTask, getPostBuildTasks()));
+        _.spread(runSequence)(_.concat(tasks, buildTask, getPostBuildTasks(), 'watch-ext'));
       });
     }, {
       description: 'Watch external assets and automatically build and reload the browser when a change is made.',

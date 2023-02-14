@@ -1,6 +1,6 @@
 {
   "name": "web-tools",
-  "version": "10.7.0",
+  "version": "10.8.0",
   "description": "Repository for tools and configurations common to all imgix web projects",
   "repository": {
     "type": "git",
@@ -80,6 +80,7 @@
   "devDependencies": {
     "@babel/core": "^7.11.4",
     "@babel/preset-env": "^7.11.0",
+    "gulp": "npm:gulp-v3@^3.12.1",
     "gulp-v3": "git+https://github.com/zebrafishlabs/gulp.git#3.20.1",
     "gulp-babel": "^8.0.0",
     "gulp-jscs": "3.0.2",
