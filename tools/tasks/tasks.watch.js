@@ -1,5 +1,6 @@
 var _ = require('lodash'),
-    runSequence = require('run-sequence');
+    runSequence = require('run-sequence'),
+    args = require('yargs').argv;
 
 module.exports = function setUpTasks(gulp) {
   var appAssets = _.get(gulp, 'webToolsConfig.appAssets'),
@@ -29,7 +30,8 @@ module.exports = function setUpTasks(gulp) {
   gulp.task('watch', function watchTask(done) {
     var watchTasks = _.compact([
       hasAppAssets && 'watch-app',
-      hasExtAssets && 'watch-ext'
+      hasExtAssets && 'watch-ext',
+      !!args.watch && 'watch-config'
     ]);
 
     runSequence(watchTasks, done);
@@ -90,6 +92,43 @@ module.exports = function setUpTasks(gulp) {
       });
     }, {
       description: 'Watch external assets and automatically build and reload the browser when a change is made.',
+      notes: ['This task will run indefinitely until it is killed.'],
+      category: 'watch'
+    });
+  }
+
+  if (!!args.watch) {
+    gulp.task('watch-config', (done) => {
+      const files = [
+        '*.js', // Web-tools and gulpfile
+        'misc/*.js', // Web-dashboard's server files
+        'tooling/*.js', // Static sites pipelines and models
+        'tooling/**/*.js',
+      ];
+
+      // Pass follow:true here to ensure symlinks are followed (for `npm link`ed components)
+      gulp.watch(files, {followSymlinks: true}, (watchDone) => {
+        var tasks = [],
+            buildTask = 'watch-config';
+
+        // Queue a build for any app assets that have ext dependencies
+        _.each(appAssets, function examineAppDependencies(dependentAssetOptions, dependentAssetType) {
+          if (!_.isEmpty(dependentAssetOptions.extAssetDependencies)) {
+            tasks.push('build-app-' + dependentAssetType);
+          }
+        });
+
+        let allTasks = _.concat(tasks, buildTask, getPostBuildTasks());
+
+        return gulp.series(...allTasks, function finishBuildAppAssets(seriesDone) {
+          seriesDone();
+          watchDone();
+        })();
+      });
+
+      done();
+    }, {
+      description: 'Watch server assets and automatically build and reload the browser when a change is made.',
       notes: ['This task will run indefinitely until it is killed.'],
       category: 'watch'
     });
