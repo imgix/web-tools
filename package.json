@@ -6,6 +6,10 @@
     "type": "git",
     "url": "https://github.com/imgix/web-tools"
   },
+  "scripts": {
+    "lint": "npx eslint -c runcoms/.eslintrc --ext .js tools",
+    "lint:fix": "npx eslint -c runcoms/.eslintrc --ext .js tool --fix"
+  },
   "author": "imgix",
   "license": "BSD",
   "main": "tools/web-tools.js",

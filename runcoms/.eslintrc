@@ -2,13 +2,13 @@
   "env": {
     "browser": true
   },
+  "parserOptions": {
+    "ecmaVersion": 2018
+  },
   "globals": {},
   "rules": {
     "no-bitwise": 2,
-    "curly": [
-      2,
-      "all"
-    ],
+    "curly": [2, "all"],
     "eqeqeq": 2,
     "guard-for-in": 2,
     "no-extend-native": 2,
@@ -41,10 +41,7 @@
         "avoidEscape": true
       }
     ],
-    "no-cond-assign": [
-      2,
-      "except-parens"
-    ],
+    "no-cond-assign": [2, "except-parens"],
     "no-implicit-coercion": [
       2,
       {
@@ -63,14 +60,8 @@
     "no-multiple-empty-lines": 2,
     "no-multi-str": 2,
     "no-multi-spaces": 2,
-    "dot-location": [
-      2,
-      "property"
-    ],
-    "operator-linebreak": [
-      2,
-      "after"
-    ],
+    "dot-location": [2, "property"],
+    "operator-linebreak": [2, "after"],
     "key-spacing": [
       2,
       {
@@ -93,51 +84,32 @@
         "named": "never"
       }
     ],
-    "array-bracket-spacing": [
-      2,
-      "never",
-      {}
-    ],
+    "array-bracket-spacing": [2, "never", {}],
     "space-in-parens": [
       2,
-      "never",
+      "never"
       // {
       //   "exceptions": [
       //     "{}"
       //   ]
       // }
     ],
-    "comma-dangle": [
-      2,
-      "never"
-    ],
+    "comma-dangle": [2, "never"],
     "no-trailing-spaces": 2,
-    "yoda": [
-      2,
-      "never"
-    ],
+    "yoda": [2, "never"],
     "camelcase": [
       2,
       {
         "properties": "always"
       }
     ],
-    "comma-style": [
-      2,
-      "last"
-    ],
+    "comma-style": [2, "last"],
     "dot-notation": 2,
     "eol-last": 2,
-    "one-var": [
-      2,
-      "always"
-    ],
+    "one-var": [2, "always"],
     "func-names": 2,
     "wrap-iife": 2,
-    "semi": [
-      2,
-      "always"
-    ],
+    "semi": [2, "always"],
     "space-infix-ops": 2,
     "keyword-spacing": [
       2,
@@ -155,13 +127,7 @@
         }
       }
     ],
-    "spaced-comment": [
-      2,
-      "always"
-    ],
-    "space-before-blocks": [
-      2,
-      "always"
-    ]
+    "spaced-comment": [2, "always"],
+    "space-before-blocks": [2, "always"]
   }
 }
