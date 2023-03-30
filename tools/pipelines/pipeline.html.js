@@ -2,7 +2,8 @@ var _ = require('lodash'),
     path = require('path'),
     combine = require('stream-combiner'),
     htmlhintReporter = require('reporter-plus/htmlhint'),
-    cheerio = require('cheerio');
+    cheerio = require('cheerio'),
+    args = require('yargs').argv;
 
 module.exports = function setupHTMLPipeline(gulp) {
   var inject = require('gulp-inject');
@@ -36,8 +37,11 @@ module.exports = function setupHTMLPipeline(gulp) {
       return file.contents.toString();
 
     } else if (ext === '.js') {
-      return `<script src="${ filePath }" async defer></script>`;
-
+      if (args.env === 'production') {
+        return `<script src="${ filePath }" async defer></script>`;
+      } else {
+        return `<script src="${ filePath }"></script>`;
+      }
     // Use the default transform as fallback
     } else if (ext !== '.map') {
       return inject.transform.apply(inject.transform, arguments);
