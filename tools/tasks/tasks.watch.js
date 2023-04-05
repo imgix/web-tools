@@ -115,7 +115,7 @@ module.exports = function setUpTasks(gulp) {
         '*.js', // Web-tools and gulpfile
         'misc/*.js', // Web-dashboard's server files
         'tooling/*.js', // Static sites pipelines and models
-        'tooling/**/*.js',
+        'tooling/**/*.js'
       ];
 
       // Pass follow:true here to ensure symlinks are followed (for `npm link`ed components)
