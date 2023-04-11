@@ -4,7 +4,8 @@ var _ = require('lodash'),
     clean = require('gulp-clean'),
     filter = require('gulp-filter');
 
-const fs = require("fs/promises")
+const fs = require('fs').promises;
+
 
 module.exports = function setUpTasks(gulp) {
   var appAssets = _.get(gulp, 'webToolsConfig.appAssets'),
