@@ -1,8 +1,7 @@
 var _ = require('lodash'),
     path = require('path'),
-    combine = require('stream-combiner'),
-    jshintReporter = require('reporter-plus/jshint'),
-    jscsReporter = require('reporter-plus/jscs');
+    eslint=require('gulp-eslint'),
+    combine = require('stream-combiner');
 
 module.exports = function setupJSPipeline(gulp) {
   return function jsPipeline(options) {
@@ -26,17 +25,14 @@ module.exports = function setupJSPipeline(gulp) {
     });
 
     return combine(_.compact([
-      // Checking pipeline
-      options.doCheck && require('gulp-jshint')(_.merge(
-          {lookup: false},
-          require('../../runcoms/rc.jshint.json')
-        )),
-      options.doCheck && require('gulp-jshint').reporter(jshintReporter),
-      options.doCheck && require('gulp-jscs')({
-          configPath: path.join(__dirname, '..', '..', 'runcoms', 'rc.jscs.json')
-        }),
-      options.doCheck && require('gulp-jscs').reporter(jscsReporter.path),
-
+      // Linting pipeline
+      options.doCheck && eslint({configFile: path.join(__dirname, '..', '..', 'runcoms', '.eslintrc')}),
+      options.doCheck && eslint.results(results => {
+        // Called once for all ESLint results.
+        results.warningCount && console.warn('\x1b[33m%s\x1b[0m',`ESLint - Total Warnings: ${results.warningCount}`);
+        results.errorCount && console.error('\x1b[36m%s\x1b[0m',`ESLint - Total Errors: ${results.errorCount}`);
+      }),
+      options.doCheck && eslint.format(),
       // Productionization pipeline
       options.doSourceMaps && require('gulp-sourcemaps').init(),
       options.doBabel && require('gulp-babel')({
