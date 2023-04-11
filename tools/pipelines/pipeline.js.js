@@ -26,7 +26,7 @@ module.exports = function setupJSPipeline(gulp) {
 
     return combine(_.compact([
       // Linting pipeline
-      options.doCheck && eslint({configFile: path.join(__dirname, '..', '..', 'runcoms', '.eslintrc')}),
+      options.doCheck && eslint({configFile: path.join(__dirname, '..', '..', 'runcoms', '.eslintrc.json')}),
       options.doCheck && eslint.results(results => {
         // Called once for all ESLint results.
         results.warningCount && console.warn('\x1b[33m%s\x1b[0m',`ESLint - Total Warnings: ${results.warningCount}`);
