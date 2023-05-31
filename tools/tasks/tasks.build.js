@@ -29,7 +29,7 @@ module.exports = function setUpTasks(gulp) {
 
     const destPath = _.get(gulp, 'webToolsConfig.destPath');
 
-    fs.access("./.srv_dev").catch(() => {
+    fs.access(destPath).catch(() => {
       fs.mkdir(destPath, err => {
         if (err) {
           console.log(`Error creating directory ${destPath}`);
