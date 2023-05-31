@@ -4,7 +4,7 @@ var _ = require('lodash'),
     clean = require('gulp-clean'),
     filter = require('gulp-filter');
 
-const fs = require('fs').promises;
+const fs = require('fs')
 
 
 module.exports = function setUpTasks(gulp) {
@@ -29,14 +29,13 @@ module.exports = function setUpTasks(gulp) {
 
     const destPath = _.get(gulp, 'webToolsConfig.destPath');
 
-    fs.access(destPath).catch(() => {
-      fs.mkdir(destPath, err => {
-        if (err) {
-          console.log(`Error creating directory ${destPath}`);
-
-          throw err;
+    fs.promises.access(destPath).catch(() => {
+        try {
+          fs.mkdirSync(destPath, { recursive: true });
+        } catch (error) {
+          console.error(error);
+          throw new Error(`Failed to create destination directory: ${destPath}`);
         }
-      });
     }).finally(() => {
       runSequence(
         'build-clean',
