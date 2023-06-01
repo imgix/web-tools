@@ -2,11 +2,14 @@
   "env": {
     "browser": true
   },
+  "extends": ["prettier"],
+  "plugins": ["prettier"],
   "parserOptions": {
     "ecmaVersion": 2018
   },
   "globals": {},
   "rules": {
+    "prettier/prettier": ["error"],
     "no-bitwise": 2,
     "curly": [2, "all"],
     "eqeqeq": 2,
