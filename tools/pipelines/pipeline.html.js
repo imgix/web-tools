@@ -37,7 +37,7 @@ module.exports = function setupHTMLPipeline(gulp) {
       return file.contents.toString();
 
     } else if (ext === '.js') {
-      if (args.env === 'production') {
+      if (process.env.NODE_ENV === 'production') {
         return `<script src="${ filePath }" async defer></script>`;
       } else {
         return `<script src="${ filePath }"></script>`;
