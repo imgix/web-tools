@@ -77,7 +77,7 @@
     "postcss-simple-vars": "3.0.0",
     "q": "1.4.1",
     "reporter-plus": "git+https://github.com/jayeb/reporter-plus.git#1.6.0",
-    "semver": "5.3.0",
+    "semver": "5.7.2",
     "stream-combiner": "0.2.2",
     "stylelint": "4.5.1",
     "through2": "2.0.3",
