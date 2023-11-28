@@ -6,7 +6,7 @@ module.exports = function chromeLoad(url) {
   // Check to see if the chrome-cli command exists
   return runCommand('command -v chrome-cli')
     .catch(function throwError(error) {
-      return error;
+      console.error('chrome-cli is not installed. Please install it with `brew install chrome-cli`');
     })
 
     // List all tabs in json format
