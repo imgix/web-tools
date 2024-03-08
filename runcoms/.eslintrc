@@ -61,7 +61,7 @@
     "no-multi-str": 2,
     "no-multi-spaces": 2,
     "dot-location": [2, "property"],
-    "operator-linebreak": [2, "after"],
+    "operator-linebreak": "off",
     "key-spacing": [
       2,
       {
