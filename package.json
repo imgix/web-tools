@@ -23,7 +23,7 @@
     "cheerio": "0.22.0",
     "compression": "1.6.2",
     "easy-table": "1.0.0",
-    "express": "4.15.2",
+    "express": "4.19.2",
     "glob": "7.0.3",
     "gulp": "4.0.2",
     "gulp-bro": "^2.0.0",
