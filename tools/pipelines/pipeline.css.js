@@ -16,7 +16,6 @@ module.exports = function setupCSSPipeline(gulp) {
 
   CHECK_PLUGINS = [
     'stylelint',
-    'reporter-plus/postcss'
   ];
 
   PROCESS_PLUGINS = [

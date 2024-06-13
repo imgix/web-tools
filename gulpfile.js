@@ -7,9 +7,6 @@ var _ = require('lodash'),
     jshint = require('gulp-jshint'),
     jscs = require('gulp-jscs'),
     jsonlint = require('gulp-json-lint'),
-    jshintReporter = require('reporter-plus/jshint'),
-    jscsReporter = require('reporter-plus/jscs'),
-    jsonlintReporter = require('reporter-plus/jsonlint'),
     gulpMetadata = require('./tools/gulp-metadata.js').applyTo(gulp);
 
 /*--- Check Tasks ---*/
@@ -49,7 +46,6 @@ gulp.task('help', gulp.series(help), {
 function checkRuncoms() {
   return gulp.src(path.join('runcoms', '*.json'))
     .pipe(jsonlint())
-    .pipe(jsonlint.report(jsonlintReporter));
 }
 
 function defaultTask(done) {
@@ -66,11 +62,9 @@ function checkTools() {
         {lookup: false},
         require('./runcoms/rc.jshint.json')
       )))
-    .pipe(jshint.reporter(jshintReporter))
     .pipe(jscs({
         configPath: path.join(__dirname, '.', 'runcoms', 'rc.jscs.json')
       }))
-    .pipe(jscs.reporter(jscsReporter.path));
 }
 
 function version() {

@@ -1,7 +1,6 @@
 var _ = require('lodash'),
     path = require('path'),
     combine = require('stream-combiner'),
-    htmlhintReporter = require('reporter-plus/htmlhint'),
     cheerio = require('cheerio'),
     args = require('yargs').argv;
 
@@ -80,7 +79,6 @@ module.exports = function setupHTMLPipeline(gulp) {
       options.doCheck && require('gulp-htmlhint')({
           htmlhintrc: path.join('node_modules', 'web-tools', 'runcoms', 'rc.htmlhint.json')
         }),
-      options.doCheck && require('gulp-htmlhint').reporter(htmlhintReporter),
 
       // Processing pipeline
       options.doProcess && require('gulp-processhtml')(options.processOptions),

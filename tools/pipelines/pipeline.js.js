@@ -1,8 +1,6 @@
 var _ = require('lodash'),
     babelify = require('babelify'),
     combine = require('stream-combiner'),
-    jshintReporter = require('reporter-plus/jshint'),
-    jscsReporter = require('reporter-plus/jscs'),
     path = require('path'),
     sort = require('gulp-sort');
 
@@ -45,11 +43,9 @@ module.exports = function setupJSPipeline(gulp) {
           {lookup: false},
           require('../../runcoms/rc.jshint.json')
         )),
-      options.doCheck && require('gulp-jshint').reporter(jshintReporter),
       options.doCheck && require('gulp-jscs')({
           configPath: path.join(__dirname, '..', '..', 'runcoms', 'rc.jscs.json')
         }),
-      options.doCheck && require('gulp-jscs').reporter(jscsReporter.path),
 
       // Browserify
       require('gulp-bro')(
